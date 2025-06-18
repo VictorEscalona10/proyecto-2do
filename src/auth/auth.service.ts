@@ -8,7 +8,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService) {}
+  constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService) { }
 
   async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
@@ -25,8 +25,8 @@ export class AuthService {
       where: { email },
       select: {
         email: true,
-        password: true, 
-        rol: true, 
+        password: true,
+        rol: true,
       }
     });
 
@@ -44,19 +44,18 @@ export class AuthService {
       rol: findUser.rol
     };
 
-    const token = this.jwtService.sign(payload);
+    const token = this.jwtService.sign(payload, {
+      expiresIn: '10m', 
+    });
 
-    res.cookie('session', token, {
+    res.cookie('jwt', token, {
       httpOnly: true,
       sameSite: 'strict',
-      maxAge: 10 * 60 * 1000,
+      maxAge: 10 * 60 * 1000, 
     });
 
     return { message: 'Login exitoso', token };
   }
-
-
-
 
   async register(user: RegisterDto) {
     const { name, email, password, repeatPassword } = user;
@@ -79,7 +78,7 @@ export class AuthService {
       data: {
         name,
         email,
-        password: hashedPassword, // Puedes cambiar esto según tu lógica de asignación de roles
+        password: hashedPassword,
       },
     }).catch(error => {
       throw new InternalServerErrorException('Error al registrar el usuario', error);
