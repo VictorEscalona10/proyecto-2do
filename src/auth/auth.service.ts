@@ -54,7 +54,7 @@ export class AuthService {
       maxAge: 10 * 60 * 1000, 
     });
 
-    return { message: 'Login exitoso', token };
+    return { message: 'Inicio de sesión exitoso!', token };
   }
 
   async register(user: RegisterDto) {
