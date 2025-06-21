@@ -9,7 +9,6 @@ export class RegisterDto{
     @IsNotEmpty({message: 'El email es requerido'})
     email: string;
     
-    @IsString({message: 'La contraseña debe ser un texto'})
     @IsNotEmpty({message: 'La contraseña es requerida'})
     @Matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, {
     message:
