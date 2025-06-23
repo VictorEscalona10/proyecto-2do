@@ -69,7 +69,7 @@ export class AuthService {
     });
 
     if (findUser) {
-      throw new InternalServerErrorException('El usuario ya existe');
+      throw new InternalServerErrorException('El usuario ya existe!');
     }
 
     const hashedPassword = await this.hashPassword(password);
