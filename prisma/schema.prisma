@@ -14,11 +14,65 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  rol       String   @default("usuario")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int         @id @default(autoincrement())
+  name         String
+  email        String     @unique
+  password     String
+  role         String     @default("usuario")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now())
+  orders       Order[]
+  reviews      Review[]
+}
+
+model Product {
+  id           Int         @id @default(autoincrement())
+  name         String
+  description  String?
+  price        Decimal
+  imageUrl     String?
+  stock        Int
+  orderDetails OrderDetail[]
+  reviews      Review[]
+}
+
+model Order {
+  id           Int             @id @default(autoincrement())
+  user         User?           @relation(fields: [userId], references: [id])
+  userId       Int?
+  orderDate    DateTime        @default(now())
+  status       String          @default("Pending")
+  total        Decimal
+  orderDetails OrderDetail[]
+  payments     Payment[]
+}
+
+model OrderDetail {
+  id             Int       @id @default(autoincrement())
+  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId        Int
+  product        Product   @relation(fields: [productId], references: [id])
+  productId      Int
+  quantity       Int
+  unitPrice      Decimal
+}
+
+model Payment {
+  id           Int      @id @default(autoincrement())
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      Int
+  method       String
+  paymentDate  DateTime @default(now())
+  status       String   @default("Pending")
+}
+
+model Review {
+  id           Int        @id @default(autoincrement())
+  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId       Int?
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId    Int
+  rating       Int?
+  comment      String?
+  date         DateTime   @default(now())
 }
