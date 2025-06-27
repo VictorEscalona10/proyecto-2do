@@ -26,7 +26,7 @@ export class AuthService {
       select: {
         email: true,
         password: true,
-        rol: true,
+        role: true,
       }
     });
 
@@ -41,7 +41,7 @@ export class AuthService {
 
     const payload = {
       email: findUser.email,
-      rol: findUser.rol
+      role: findUser.role
     };
 
     const token = this.jwtService.sign(payload, {

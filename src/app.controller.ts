@@ -16,6 +16,8 @@ export class AppController {
       statusCode: 200,
     };
   }
+
+  @Get()
   getHello(): string {
     return this.appService.getHello();
   }

@@ -1,18 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import 'dotenv/config';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
+import 'dotenv/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe())
-  app.use(cookieParser())
-  app.enableCors({
-    origin: 'http://localhost:5173', // tu frontend
-    credentials: true, // permite enviar cookies
-  })
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  await app.listen(process.env.PORT ?? 3000);
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true,  }));
+
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/images/',
+  });
+
+  app.use(cookieParser());
+
+  app.enableCors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  });
+
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
 }
-bootstrap()
+bootstrap();
