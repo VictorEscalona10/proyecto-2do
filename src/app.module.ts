@@ -5,10 +5,11 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProductsModule } from './products/products.module';
 import { CategoryModule } from './category/category.module';
+import { GoogleModule } from './google/google.module';
 
 @Module({
   imports: [AuthModule, 
-    ConfigModule.forRoot({isGlobal: true}), ProductsModule, CategoryModule
+    ConfigModule.forRoot({isGlobal: true}), ProductsModule, CategoryModule, GoogleModule
   ],
   controllers: [AppController],
   providers: [AppService],
