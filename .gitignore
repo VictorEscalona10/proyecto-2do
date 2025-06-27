@@ -4,6 +4,7 @@
 /build
 *.db
 /prisma
+/uploads
 
 # Logs
 logs
