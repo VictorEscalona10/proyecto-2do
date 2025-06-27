@@ -9,21 +9,23 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+
 model User {
-  id           Int         @id @default(autoincrement())
-  name         String
-  email        String     @unique
-  password     String
-  role         String     @default("usuario")
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @default(now())
-  orders       Order[]
-  reviews      Review[]
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  password  String
+  role      UserRole   @default(USUARIO)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now())
+  orders    Order[]
+  reviews   Review[]
 }
+
 
 model Product {
   id           Int         @id @default(autoincrement())
@@ -31,13 +33,21 @@ model Product {
   description  String?
   price        Decimal
   imageUrl     String?
+  categoryId   Int
+  category     Category?   @relation(fields: [categoryId], references: [id])
   stock        Int
   orderDetails OrderDetail[]
   reviews      Review[]
 }
 
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String     @unique
+  products Product[]
+}
+
 model Order {
-  id           Int             @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   user         User?           @relation(fields: [userId], references: [id])
   userId       Int?
   orderDate    DateTime        @default(now())
@@ -75,4 +85,9 @@ model Review {
   rating       Int?
   comment      String?
   date         DateTime   @default(now())
+}
+
+enum UserRole {
+  ADMIN
+  USUARIO
 }
