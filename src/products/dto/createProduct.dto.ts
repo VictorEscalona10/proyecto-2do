@@ -12,10 +12,6 @@ export class CreateProductDto {
   @IsNumber()
   price: number;
 
-  @Type(() => Number)
-  @IsNumber()
-  stock: number;
-
   @IsString()
   categoryName: string;
 }

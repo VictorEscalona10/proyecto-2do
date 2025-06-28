@@ -27,7 +27,6 @@ export class ProductsService {
         name: data.name,
         description: data.description,
         price: new Prisma.Decimal(data.price),
-        stock: data.stock,
         imageUrl: data.imageUrl,
         categoryId: findCategory.id,
       },
