@@ -2,9 +2,9 @@
   <img src="https://nestjs.com/img/logo_text.svg" alt="NestJS Logo" width="320"/>
 </p>
 
-# Backend - Proyecto 2do Año
+# Backend - Pastelería (Proyecto 2do Año)
 
-Este es el backend de un sistema de autenticación y gestión de usuarios desarrollado con **NestJS**, **Prisma** y **JWT**.
+Este es el backend de un sistema de gestión de usuarios, autenticación y productos para una pastelería, desarrollado con **NestJS**, **Prisma** y **JWT**.
 
 ---
 
@@ -12,7 +12,7 @@ Este es el backend de un sistema de autenticación y gestión de usuarios desarr
 
 - Node.js >= 18.x
 - npm >= 9.x
-- PostgreSQL (o puedes usar SQLite para pruebas)
+- PostgreSQL (o SQLite para pruebas)
 - [Nest CLI](https://docs.nestjs.com/cli/overview) (opcional, recomendado)
 
 ---
@@ -35,12 +35,11 @@ Este es el backend de un sistema de autenticación y gestión de usuarios desarr
 3. **Crea el archivo `.env` en la raíz de `backend/` con el siguiente contenido:**
 
    ```env
-   DATABASE_URL="file:./dev.db"
-   JWT_SECRET="secretojwt"
-   JWT_EXPIRES_IN="duracion"
+   DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/pasteleria"
+   JWT_SECRET="tu_clave_secreta"
+   JWT_EXPIRES_IN="10m"
+   SALT=10
    ```
-
-   > Puedes cambiar `DATABASE_URL` a una conexión PostgreSQL si lo prefieres.
 
 4. **Configura la base de datos con Prisma:**
 
@@ -60,18 +59,21 @@ Este es el backend de un sistema de autenticación y gestión de usuarios desarr
 
 ## 📁 Estructura Principal
 
-- `src/auth/` - Lógica de autenticación (login, registro, guards, etc.)
-- `src/prisma/` - Configuración de Prisma ORM
-- `src/user/` - Módulo de usuarios
+- `src/auth/` - Autenticación (login, registro, guards, JWT, DTOs)
+- `src/prisma/` - Configuración y servicio de Prisma ORM
+- `src/category/` - Gestión de categorías de productos
+- `src/products/` - Gestión de productos
+- `uploads/` - Imágenes subidas de productos
 
 ---
 
 ## 🔑 Variables de entorno necesarias (.env)
 
 ```env
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="secretojwt"
-JWT_EXPIRES_IN="tiempo"
+DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/pasteleria"
+JWT_SECRET="tu_clave_secreta"
+JWT_EXPIRES_IN="10m"
+SALT=10
 ```
 
 ---
@@ -84,14 +86,22 @@ JWT_EXPIRES_IN="tiempo"
 
 ---
 
+## 🔒 Seguridad y autenticación
+
+- Las rutas protegidas requieren autenticación mediante JWT (cookie httpOnly).
+- El login y registro validan los datos y las contraseñas se almacenan hasheadas.
+- Usa guards personalizados para proteger endpoints sensibles.
+
+---
+
 ## 📬 Notas
 
-- El backend está preparado para trabajar con un frontend en React (ver carpeta `../frontend`).
-- Las rutas protegidas requieren autenticación mediante JWT (cookie httpOnly).
+- El backend está preparado para integrarse con un frontend (por ejemplo, React).
 - Si tienes dudas, revisa los comentarios en el código o abre un issue.
+- Recuerda no subir archivos sensibles ni la carpeta `node_modules` a tu repositorio.
 
 ---
 
 <p align="center">
-  <b>¡Feliz desarrollo con NestJS! 🚀</b>
+  <b>¡Feliz desarrollo con NestJS y Prisma! 🎂🚀</b>
 </p>

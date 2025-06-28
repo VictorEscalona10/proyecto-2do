@@ -9,7 +9,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/createProduct.dto'; // Asegúrate del nombre y ruta correcta
+import { CreateProductDto } from './dto/createProduct.dto'; 
 
 @Controller('products')
 export class ProductsController {
@@ -29,10 +29,7 @@ export class ProductsController {
         }),
     )
 
-    async createProduct(
-        @Body() body: CreateProductDto,
-        @UploadedFile() file: Express.Multer.File,
-    ) {
+    async createProduct(@Body() body: CreateProductDto, @UploadedFile() file: Express.Multer.File) {
         const imageUrl = file ? `/images/${file.filename}` : null;
 
         return this.productsService.create({ ...body, imageUrl });
