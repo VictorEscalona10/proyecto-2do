@@ -4,14 +4,16 @@ import { Response } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService) { }
+  constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService, private readonly configService: ConfigService) { }
 
   async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
+    const saltRounds = Number(this.configService.get('SALT')) || 10;
+    return bcrypt.hash(password, saltRounds);
   }
 
   async comparePasswords(password: string, hashedPassword: string): Promise<boolean> {
