@@ -47,13 +47,13 @@ export class AuthService {
     };
 
     const token = this.jwtService.sign(payload, {
-      expiresIn: '10m', 
+      expiresIn: '10m',
     });
 
     res.cookie('jwt', token, {
       httpOnly: true,
       sameSite: 'strict',
-      maxAge: 10 * 60 * 1000, 
+      maxAge: 10 * 60 * 1000,
     });
 
     return { message: 'Inicio de sesión exitoso!', token };
@@ -78,9 +78,9 @@ export class AuthService {
 
     return this.prisma.user.create({
       data: {
-        name,
-        email,
-        password: hashedPassword,
+      name: name.toLowerCase(),
+      email: email,
+      password: hashedPassword,
       },
     }).catch(error => {
       throw new InternalServerErrorException('Error al registrar el usuario', error);
