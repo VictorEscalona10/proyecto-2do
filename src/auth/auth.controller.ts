@@ -19,4 +19,10 @@ export class AuthController {
     const result = await this.authService.register(registerDto);
     return result;
   }
+
+  @Post('logout')
+  async logoutUser(@Res() res: Response) {
+    res.clearCookie('jwt');
+    return res.json({ message: 'Sesion cerrada exitosamente' });
+  }
 }
