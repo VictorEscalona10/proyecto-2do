@@ -8,7 +8,6 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('protected')
-  // Usa el guard de JWT para proteger la ruta
   @UseGuards(JwtAuthGuard)
   getProtected(): Object {
     return {
