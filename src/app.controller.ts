@@ -2,9 +2,6 @@ import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { Throttle } from '@nestjs/throttler';
-
-
 
 @Controller()
 export class AppController {

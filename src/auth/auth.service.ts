@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { LoginDto } from './dto/login.dto';
@@ -38,7 +38,7 @@ export class AuthService {
 
     const isPasswordValid = await this.comparePasswords(password, findUser.password);
     if (!isPasswordValid) {
-      throw new InternalServerErrorException('Contraseña incorrecta');
+      throw new UnauthorizedException('Contraseña incorrecta');
     }
 
     const payload = {
@@ -63,7 +63,7 @@ export class AuthService {
     const { name, email, password, repeatPassword } = user;
 
     if (password !== repeatPassword) {
-      throw new InternalServerErrorException('Las contraseñas no coinciden');
+      throw new ConflictException('Las contraseñas no coinciden');
     }
 
     const findUser = await this.prisma.user.findUnique({
@@ -71,19 +71,26 @@ export class AuthService {
     });
 
     if (findUser) {
-      throw new InternalServerErrorException('El usuario ya existe!');
+      throw new ConflictException('El usuario ya existe!');
     }
 
     const hashedPassword = await this.hashPassword(password);
 
-    return this.prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data: {
       name: name.toLowerCase(),
       email: email,
       password: hashedPassword,
       },
+      select: {
+      name: true,
+      email: true,
+      role: true,
+      },
     }).catch(error => {
       throw new InternalServerErrorException('Error al registrar el usuario', error);
     });
+
+    return newUser;
   }
 }
