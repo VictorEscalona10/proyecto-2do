@@ -94,11 +94,68 @@ SALT=10
 
 ---
 
-## 📬 Notas
+## 📚 Ejemplos de Endpoints
 
-- El backend está preparado para integrarse con un frontend (por ejemplo, React).
-- Si tienes dudas, revisa los comentarios en el código o abre un issue.
-- Recuerda no subir archivos sensibles ni la carpeta `node_modules` a tu repositorio.
+### Login
+```bash
+POST /auth/login
+Content-Type: application/json
+{
+  "email": "usuario@correo.com",
+  "password": "123456"
+}
+```
+
+### Registro
+```bash
+POST /auth/register
+Content-Type: application/json
+{
+  "name": "Usuario",
+  "email": "usuario@correo.com",
+  "password": "123456",
+  "repeatPassword": "123456"
+}
+```
+
+### Obtener productos
+```bash
+GET /products
+```
+
+### Crear producto (requiere autenticación y envío de imagen)
+```bash
+POST /products
+Headers: Cookie: jwt=<token>
+Body (form-data):
+  name: "Torta de chocolate"
+  price: 1000
+  image: <archivo>
+```
+
+---
+
+## 🗂️ Descripción de carpetas principales
+
+- `src/auth/` - Lógica de autenticación y autorización (JWT, guards, DTOs)
+- `src/prisma/` - Configuración y servicio de acceso a base de datos con Prisma
+- `src/category/` - Gestión de categorías de productos
+- `src/products/` - Gestión de productos y subida de imágenes
+- `uploads/` - Carpeta donde se almacenan las imágenes subidas
+
+---
+
+## 📦 Despliegue
+
+1. Configura las variables de entorno en producción.
+2. Ejecuta las migraciones de Prisma en el entorno de producción.
+3. Usa `npm run start:prod` para levantar el servidor en modo producción.
+
+---
+
+## 📫 Contacto
+
+¿Dudas o sugerencias? Puedes abrir un issue en el repositorio o contactar al autor del proyecto.
 
 ---
 
