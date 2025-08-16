@@ -6,6 +6,7 @@ import { RegisterDto } from './dto/register.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -59,7 +60,7 @@ export class AuthService {
     return { message: 'Inicio de sesión exitoso!', token };
   }
 
-  async register(user: RegisterDto) {
+  async register(user: RegisterDto, role?: UserRole) {
     const { name, email, password, repeatPassword } = user;
 
     if (password !== repeatPassword) {
@@ -81,6 +82,7 @@ export class AuthService {
       name: name.toLowerCase(),
       email: email,
       password: hashedPassword,
+      role: role ?? UserRole.USUARIO,
       },
       select: {
       name: true,
