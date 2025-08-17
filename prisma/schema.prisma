@@ -88,5 +88,5 @@ model Review {
 
 enum UserRole {
   ADMIN
-  USUARIO
+  USUARIO
 }
