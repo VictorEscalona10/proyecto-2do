@@ -11,8 +11,6 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true,  }));
 
-  /* app.useGlobalGuards(new ThrottlerGuard()); */
-
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/images/',
   });
