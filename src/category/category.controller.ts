@@ -13,6 +13,8 @@ export class CategoryController {
 
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
+    const lower = createCategoryDto.name.toLowerCase();
+    createCategoryDto.name = lower;
     return this.categoryService.create(createCategoryDto);
   }
   
