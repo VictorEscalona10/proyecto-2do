@@ -4,6 +4,9 @@ import {
     Body,
     UploadedFile,
     UseInterceptors,
+    Put,
+    Param,
+    Delete,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -44,5 +47,19 @@ export class ProductsController {
         const imageUrl = file ? `/images/${file.filename}` : null;
 
         return this.productsService.create({ ...body, imageUrl });
+    }
+
+    @Put(':id')
+    async updateProduct(
+        @Param('id') id: string,
+        @Body() body: Partial<CreateProductDto>
+    ) {
+        // Puedes agregar lógica para manejar imagen si lo necesitas
+        return this.productsService.update(Number(id), body);
+    }
+
+    @Delete(':id')
+    async deleteProduct(@Param('id') id: string) {
+        return this.productsService.delete(Number(id));
     }
 }

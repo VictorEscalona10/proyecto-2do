@@ -40,6 +40,10 @@ export class ProductsService {
     if (error instanceof HttpException) throw error;
     throw new InternalServerErrorException('Error al crear el producto');
   }
+
+  
+
+
 }
   async getAll(): Promise<{ message: string; data: Product[] }> {
     try {
@@ -51,6 +55,60 @@ export class ProductsService {
     } catch (error) {
       if (error instanceof HttpException) throw error;
         throw new InternalServerErrorException('Error al obtener los productos');
+    }
+  }
+
+  async update(
+    id: number,
+    data: Partial<CreateProductDto> & { imageUrl?: string; categoryName?: string }
+  ): Promise<{ message: string; data: Product }> {
+    try {
+      let categoryId: number | undefined = undefined;
+
+      if (data.categoryName) {
+        const findCategory = await this.prisma.category.findUnique({
+          where: { name: data.categoryName },
+        });
+        if (!findCategory) {
+          throw new NotFoundException('Categoría no encontrada');
+        }
+        categoryId = findCategory.id;
+      }
+
+      const updatedProduct = await this.prisma.product.update({
+        where: { id },
+        data: {
+          name: data.name,
+          description: data.description,
+          price: data.price ? new Prisma.Decimal(data.price) : undefined,
+          imageUrl: data.imageUrl,
+          categoryId: categoryId,
+        },
+      });
+
+      return {
+        message: 'Producto actualizado correctamente',
+        data: updatedProduct,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException('Error al actualizar el producto');
+    }
+  }
+
+  async delete(id: number): Promise<{ message: string }> {
+    try {
+      const product = await this.prisma.product.findUnique({ where: { id } });
+      if (!product) {
+        throw new NotFoundException('Producto no encontrado');
+      }
+
+      await this.prisma.product.delete({ where: { id } });
+
+      return { message: 'Producto eliminado correctamente' };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException('Error al eliminar el producto');
     }
   }
 
