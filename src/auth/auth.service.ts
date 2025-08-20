@@ -95,4 +95,26 @@ export class AuthService {
 
     return { message: 'usuario registrado exitosamente'};
   }
+
+  async search(query: { name?: string; email?: string }) {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: {
+          ...(query.name && { name: { contains: query.name, mode: 'insensitive' } }),
+          ...(query.email && { email: { contains: query.email, mode: 'insensitive' } }),
+        },
+        select: {
+          name: true,
+          email: true,
+          role: true,
+        },
+      });
+      return {
+        message: 'Usuarios encontrados',
+        data: users,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Error al buscar usuarios');
+    }
+  }
 }
