@@ -7,6 +7,8 @@ import {
     Put,
     Param,
     Delete,
+    Get,
+    Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -61,5 +63,18 @@ export class ProductsController {
     @Delete(':id')
     async deleteProduct(@Param('id') id: string) {
         return this.productsService.delete(Number(id));
+    }
+
+    @Get('search')
+    async searchProducts(
+        @Query('name') name?: string,
+        @Query('categoryName') categoryName?: string,
+        @Query('price') price?: string
+    ) {
+        return this.productsService.search({
+            name,
+            categoryName,
+            price: price ? Number(price) : undefined,
+        });
     }
 }

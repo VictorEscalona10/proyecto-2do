@@ -112,5 +112,28 @@ export class ProductsService {
     }
   }
 
+  async search(query: { name?: string; categoryName?: string; price?: number }) {
+    try {
+      const products = await this.prisma.product.findMany({
+        where: {
+          ...(query.name && { name: { contains: query.name, mode: 'insensitive' } }),
+          ...(query.price && { price: new Prisma.Decimal(query.price) }),
+          ...(query.categoryName && {
+            category: {
+              name: { contains: query.categoryName, mode: 'insensitive' }
+            }
+          }),
+        },
+        include: { category: true },
+      });
+      return {
+        message: 'Productos encontrados',
+        data: products,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Error al buscar productos');
+    }
+  }
+
   
 }
