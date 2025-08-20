@@ -93,6 +93,6 @@ export class AuthService {
       throw new InternalServerErrorException('Error al registrar el usuario', error);
     });
 
-    return newUser;
+    return { message: 'usuario registrado exitosamente'};
   }
 }
