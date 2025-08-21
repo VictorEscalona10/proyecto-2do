@@ -38,13 +38,4 @@ export class AuthController {
     return res.json({ message: 'Sesion cerrada exitosamente' });
   }
 
-  @Get('search')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMINISTRADOR)
-  async searchUsers(
-    @Query('name') name?: string,
-    @Query('email') email?: string
-  ) {
-    return this.authService.search({ name, email });
-  }
 }

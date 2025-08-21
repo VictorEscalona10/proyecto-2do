@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ProductsModule } from './products/products.module';
 import { CategoryModule } from './category/category.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { PasswordResetModule } from './password-reset/password-reset.module';
     ProductsModule,
     CategoryModule,
     PasswordResetModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
