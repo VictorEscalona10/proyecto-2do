@@ -4,12 +4,18 @@ import {
     Body,
     UploadedFile,
     UseInterceptors,
+    Put,
+    Param,
+    Delete,
+    Get,
+    Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/createProduct.dto';
+import { Product } from '@prisma/client';
 
 @Controller('products')
 export class ProductsController {
@@ -44,5 +50,10 @@ export class ProductsController {
         const imageUrl = file ? `/images/${file.filename}` : null;
 
         return this.productsService.create({ ...body, imageUrl });
+    }
+
+    @Get('search/name')
+    async searchProducts(@Query('name') name: string) {
+        return this.productsService.searchByName(name);
     }
 }

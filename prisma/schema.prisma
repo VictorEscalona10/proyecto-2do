@@ -72,7 +72,7 @@ model Payment {
   orderId      Int
   method       String
   paymentDate  DateTime @default(now())
-  status       String   @default("Pending")
+  status       Status   @default(PENDING)
 }
 
 model Review {
@@ -90,4 +90,10 @@ enum UserRole {
   ADMINISTRADOR
   TRABAJADOR
   USUARIO
+}
+
+enum Status{
+  PENDING
+  PROCESSED
+  CANCELLED
 }
