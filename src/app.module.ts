@@ -7,6 +7,7 @@ import { ProductsModule } from './products/products.module';
 import { CategoryModule } from './category/category.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { UsersModule } from './users/users.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersModule } from './users/users.module';
     CategoryModule,
     PasswordResetModule,
     UsersModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
