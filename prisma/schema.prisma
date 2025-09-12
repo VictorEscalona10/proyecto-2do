@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,77 +10,91 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id        Int        @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
-  email     String     @unique
+  email     String   @unique
   password  String
-  role      UserRole   @default(USUARIO)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @default(now())
+  role      UserRole @default(USUARIO)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   orders    Order[]
   reviews   Review[]
+  passwordResetTokens PasswordResetToken[]
 }
 
-
 model Product {
-  id           Int         @id @default(autoincrement())
-  name         String
-  description  String?
-  price        Decimal
-  imageUrl     String?
-  categoryId   Int
-  category     Category?   @relation(fields: [categoryId], references: [id])
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Decimal
+  imageUrl    String?
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: NoAction)
   orderDetails OrderDetail[]
-  reviews      Review[]
+  reviews     Review[]
 }
 
 model Category {
   id       Int       @id @default(autoincrement())
-  name     String     @unique
+  name     String    @unique
   products Product[]
 }
 
 model Order {
-  id           Int     @id @default(autoincrement())
-  user         User?           @relation(fields: [userId], references: [id])
+  id           Int           @id @default(autoincrement())
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId       Int?
-  orderDate    DateTime        @default(now())
-  status       String          @default("Pending")
+  orderDate    DateTime      @default(now())
+  status       String        @default("Pending")
   total        Decimal
   orderDetails OrderDetail[]
   payments     Payment[]
 }
 
 model OrderDetail {
-  id             Int       @id @default(autoincrement())
-  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId        Int
-  product        Product   @relation(fields: [productId], references: [id])
-  productId      Int
-  quantity       Int
-  unitPrice      Decimal
+  id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  quantity  Int
+  unitPrice Decimal
 }
 
 model Payment {
-  id           Int      @id @default(autoincrement())
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId      Int
-  method       String
-  paymentDate  DateTime @default(now())
-  status       Status   @default(PENDING)
+  id          Int      @id @default(autoincrement())
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId     Int
+  method      String
+  paymentDate DateTime @default(now())
+  status      Status   @default(PENDING)
 }
 
 model Review {
-  id           Int        @id @default(autoincrement())
-  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId       Int?
-  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId    Int
-  rating       Int?
-  comment      String?
-  date         DateTime   @default(now())
+  id        Int      @id @default(autoincrement())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    Int?
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  rating    Int?
+  comment   String?
+  date      DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  isValid   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([isValid])
 }
 
 enum UserRole {
@@ -92,7 +103,7 @@ enum UserRole {
   USUARIO
 }
 
-enum Status{
+enum Status {
   PENDING
   PROCESSED
   CANCELLED
