@@ -9,6 +9,7 @@ export class OrdersController {
   @Post()
   createOrder(@Body() createOrderDto: CreateOrderDto) {
     // createOrderDto.items será un array de objetos
+    console.log(createOrderDto.items);
     
   }
 }
