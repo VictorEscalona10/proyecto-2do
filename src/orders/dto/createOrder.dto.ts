@@ -1,11 +1,14 @@
-// create-order.dto.ts
-import { IsArray, ValidateNested } from 'class-validator';
+import { IsArray, ValidateNested, IsNumber, IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateOrderItemDto } from './createOrderItem.dto';
 
 export class CreateOrderDto {
+  @IsNumber()
+  @IsPositive()
+  userId: number;
+
   @IsArray()
-  @ValidateNested({ each: true }) // Valida cada objeto del array
-  @Type(() => CreateOrderItemDto) // Transforma cada objeto al DTO
+  @ValidateNested({ each: true })
+  @Type(() => CreateOrderItemDto)
   items: CreateOrderItemDto[];
 }

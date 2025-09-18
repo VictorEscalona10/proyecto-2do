@@ -1,15 +1,24 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { OrdersService } from './orders.service';
+import { Controller, Post, Body, Get, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import { OrderService } from './orders.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
 
 @Controller('orders')
-export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+export class OrderController {
+  constructor(private readonly orderService: OrderService) {}
 
   @Post()
-  createOrder(@Body() createOrderDto: CreateOrderDto) {
-    // createOrderDto.items será un array de objetos
-    console.log(createOrderDto.items);
-    
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createOrderDto: CreateOrderDto) {
+    return this.orderService.create(createOrderDto);
+  }
+
+  @Get()
+  async findAll() {
+    return this.orderService.findAll();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.orderService.findOne(parseInt(id));
   }
 }
