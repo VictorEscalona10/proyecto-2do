@@ -114,7 +114,6 @@ export class OrderService {
     } catch (error) {
       this.logger.error('Error creando orden:', error);
       
-      // Si es un error de Prisma por foreign key, dar mensaje más específico
       if (error.code === 'P2003') {
         throw new NotFoundException('Uno o más IDs proporcionados no existen en la base de datos');
       }
@@ -144,7 +143,6 @@ export class OrderService {
       },
     });
 
-    // Convertir Decimal a number para todas las órdenes
     return orders.map(order => ({
       ...order,
       total: Number(order.total),
@@ -179,8 +177,7 @@ export class OrderService {
     });
 
     if (!order) return null;
-
-    // Convertir Decimal a number
+    
     return {
       ...order,
       total: Number(order.total),
