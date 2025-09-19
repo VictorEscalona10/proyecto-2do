@@ -31,10 +31,9 @@ export class MailService implements OnModuleInit {
 
   async sendOrderConfirmation(email: string, order: any, pdfBuffer: Buffer) {
     try {
-      // Usar __dirname para obtener la ruta correcta
+
       const templatePath = path.join(process.cwd(), 'src', 'orders', 'templates', 'order-confirmation.hbs');
       
-      // Verificar si el archivo existe
       if (!fs.existsSync(templatePath)) {
         throw new Error(`No se encontró la plantilla en: ${templatePath}`);
       }
@@ -56,7 +55,7 @@ export class MailService implements OnModuleInit {
       });
 
       const mailOptions = {
-        from: process.env.SMTP_FROM || '"No Reply" <noreply@example.com>',
+        from: process.env.SMTP_FROM,
         to: email,
         subject: `✅ Confirmación de Orden #${order.id}`,
         html,

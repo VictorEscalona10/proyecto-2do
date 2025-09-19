@@ -9,6 +9,8 @@ import {
     Delete,
     Get,
     Query,
+    HttpCode,
+    HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -22,7 +24,8 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService) { }
 
     @Post()
-    /* @UseGuards(JwtAuthGuard) */
+    /* UseGuards(JWTAuthGuard) */
+    @HttpCode(HttpStatus.CREATED)
     @UseInterceptors(
         FileInterceptor('image', {
             storage: diskStorage({
@@ -53,6 +56,7 @@ export class ProductsController {
     }
 
     @Get('search/name')
+    @HttpCode(HttpStatus.OK)
     async searchProducts(@Query('name') name: string) {
         return this.productsService.searchByName(name);
     }

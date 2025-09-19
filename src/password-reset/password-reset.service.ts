@@ -65,7 +65,7 @@ export class PasswordResetService {
       return { message: 'Si el email existe en nuestro sistema, recibirás instrucciones de recuperación en unos minutos.' };
 
     } catch (error) {
-      console.error('Error en forgotPassword:', error);
+      console.error('Error en forgotPassword');
       throw new InternalServerErrorException('Error al procesar la solicitud de recuperación');
     }
   }

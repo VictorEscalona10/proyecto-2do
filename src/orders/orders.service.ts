@@ -14,6 +14,12 @@ export class OrderService {
     private pdfService: PdfService,
   ) {}
 
+  async getDolarBcv(){
+    const response = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+    const data = await response.json();
+    return data.promedio;
+  }
+
   async create(createOrderDto: CreateOrderDto) {
     const { userId, items } = createOrderDto;
 
@@ -43,14 +49,15 @@ export class OrderService {
         throw new NotFoundException(`Productos con IDs ${missingProductIds.join(', ')} no encontrados`);
       }
 
-      // 3. Calcular el total
+      // 3. Calcular el total y obtener el valor del dólar
       const total = items.reduce((sum, item) => sum + (Number(item.price) * item.count), 0);
+      const dolarValue = await this.getDolarBcv(); // Obtener el valor del dólar
 
-      // 4. Crear la orden en la base de datos
+      // 4. Crear la orden en la base de datos (guardar en dólares)
       const order = await this.prisma.order.create({
         data: {
           userId,
-          total,
+          total: total, // Guardar el total en dólares
           orderDetails: {
             create: items.map(item => ({
               productId: item.id,
@@ -94,7 +101,8 @@ export class OrderService {
             ...detail.product,
             price: Number(detail.product.price)
           }
-        }))
+        })),
+        dolarValue, // Agregar el valor del dólar al PDF
       };
 
       // 6. Generar PDF
@@ -114,7 +122,6 @@ export class OrderService {
     } catch (error) {
       this.logger.error('Error creando orden:', error);
       
-      // Si es un error de Prisma por foreign key, dar mensaje más específico
       if (error.code === 'P2003') {
         throw new NotFoundException('Uno o más IDs proporcionados no existen en la base de datos');
       }
@@ -144,7 +151,6 @@ export class OrderService {
       },
     });
 
-    // Convertir Decimal a number para todas las órdenes
     return orders.map(order => ({
       ...order,
       total: Number(order.total),
@@ -179,8 +185,7 @@ export class OrderService {
     });
 
     if (!order) return null;
-
-    // Convertir Decimal a number
+    
     return {
       ...order,
       total: Number(order.total),

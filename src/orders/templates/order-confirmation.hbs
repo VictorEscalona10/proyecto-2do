@@ -1,101 +1,152 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Confirmación de Orden</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            line-height: 1.6; 
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header { 
-            text-align: center; 
-            margin-bottom: 30px;
-            border-bottom: 2px solid #4CAF50;
-            padding-bottom: 20px;
-        }
-        .order-info { 
-            margin-bottom: 25px;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-        }
-        .items-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-bottom: 25px;
-        }
-        .items-table th, .items-table td { 
-            border: 1px solid #ddd; 
-            padding: 12px; 
-            text-align: left; 
-        }
-        .items-table th { 
-            background-color: #4CAF50; 
-            color: white;
-        }
-        .total { 
-            font-weight: bold; 
-            text-align: right; 
-            font-size: 18px;
-            color: #2E7D32;
-        }
-        .footer {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            text-align: center;
-            color: #666;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>Confirmación de Orden</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 650px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .header {
+      background: #4CAF50;
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .header p {
+      margin: 5px 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .content {
+      padding: 25px;
+      text-align: center;
+    }
+    .order-info {
+      margin-bottom: 25px;
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 6px;
+      text-align: left;
+    }
+    .order-info h3 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
+    .order-info p {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .items-table th, .items-table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+    .items-table th {
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+    }
+    .items-table td {
+      text-align: center;
+    }
+    .total {
+      font-weight: bold;
+      font-size: 18px;
+      color: #2E7D32;
+      margin-top: 15px;
+      text-align: right;
+    }
+    .footer {
+      background: #f9f9f9;
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #666;
+      border-top: 1px solid #ddd;
+    }
+    .footer em {
+      color: #4CAF50;
+      font-style: normal;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <!-- Header -->
     <div class="header">
-        <h1>✅ Confirmación de Orden</h1>
-        <p>Gracias por tu compra</p>
+      <h1>Confirmación de Orden</h1>
+      <p>Gracias por tu compra</p>
     </div>
-    
-    <div class="order-info">
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Order Info -->
+      <div class="order-info">
         <h3>Información de la Orden</h3>
         <p><strong>Número de Orden:</strong> #{{orderNumber}}</p>
         <p><strong>Fecha:</strong> {{orderDate}}</p>
         <p><strong>Cliente:</strong> {{customerName}}</p>
-    </div>
+      </div>
 
-    <h3>Detalles de los Productos</h3>
-    <table class="items-table">
+      <!-- Products -->
+      <h3 style="color:#4CAF50;">Detalles de los Productos</h3>
+      <table class="items-table">
         <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio Unitario</th>
-                <th>Subtotal</th>
-            </tr>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+          </tr>
         </thead>
         <tbody>
-            {{#each items}}
-            <tr>
-                <td>{{this.name}}</td>
-                <td>{{this.quantity}}</td>
-                <td>${{this.price}}</td>
-                <td>${{this.subtotal}}</td>
-            </tr>
-            {{/each}}
+          {{#each items}}
+          <tr>
+            <td>{{this.name}}</td>
+            <td>{{this.quantity}}</td>
+            <td>${{this.price}}</td>
+            <td>${{this.subtotal}}</td>
+          </tr>
+          {{/each}}
         </tbody>
-    </table>
+      </table>
 
-    <div class="total">
-        <p><strong>Total: ${{total}}</strong></p>
+      <!-- Total -->
+      <div class="total">
+        <p>Total: ${{total}}</p>
+      </div>
     </div>
 
+    <!-- Footer -->
     <div class="footer">
-        <p>Adjunto encontrarás el comprobante de tu orden en formato PDF.</p>
-        <p>¡Gracias por confiar en nosotros!</p>
-        <p><em>Equipo de Tu Tienda</em></p>
+      <p>Adjunto encontrarás el comprobante de tu orden en formato PDF.</p>
+      <p>¡Gracias por confiar en nosotros!</p>
+      <p><em>Equipo de Migdalis Tortas</em></p>
     </div>
+  </div>
 </body>
 </html>

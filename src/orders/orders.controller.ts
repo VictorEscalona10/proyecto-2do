@@ -13,11 +13,13 @@ export class OrderController {
   }
 
   @Get()
+  @HttpCode(HttpStatus.OK)
   async findAll() {
     return this.orderService.findAll();
   }
 
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string) {
     return this.orderService.findOne(parseInt(id));
   }
