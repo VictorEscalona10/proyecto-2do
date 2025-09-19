@@ -15,7 +15,7 @@ export class AppController {
   }
 
   @Get()
-  hello(): string {
-    return 'API is running';
+  hello(){
+    return 'API is running...';
   }
 }

@@ -21,4 +21,5 @@ export interface Order {
     name: string;
     email: string;
   };
+  dolarValue: number; // Agregar el valor del dólar
 }

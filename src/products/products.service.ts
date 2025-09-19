@@ -23,7 +23,7 @@ export class ProductsService {
 
       const product = await this.prisma.product.create({
         data: {
-          name: data.name,
+          name: data.name.toLocaleLowerCase(),
           description: data.description,
           price: new Prisma.Decimal(data.price),
           imageUrl: data.imageUrl,

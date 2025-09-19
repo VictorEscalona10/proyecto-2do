@@ -6,7 +6,6 @@ import { Order } from './interfaces/order.interfaces';
 export class PdfService {
   async generateOrderPdf(order: Order): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      // Usar PDFDocument sin 'default'
       const doc = new PDFDocument({ margin: 50 });
       const chunks: Buffer[] = [];
 
@@ -14,42 +13,82 @@ export class PdfService {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      // Encabezado
-      doc.fontSize(20).text('CONFIRMACIÓN DE ORDEN', { align: 'center' });
+      // ===== Encabezado principal =====
+      doc
+        .fontSize(22)
+        .fillColor('#2c3e50')
+        .text('CONFIRMACIÓN DE ORDEN', { align: 'center' })
+        .moveDown(1.5);
+
+      // Línea separadora
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor('#3498db').stroke();
       doc.moveDown();
 
-      // Información de la orden
-      doc.fontSize(12);
+      // ===== Información de la orden =====
+      doc.fontSize(14).fillColor('#2c3e50').text('Información de la Orden', { underline: true });
+      doc.moveDown(0.5);
+
+      doc.fontSize(12).fillColor('black');
       doc.text(`Número de Orden: #${order.id}`);
       doc.text(`Fecha: ${order.orderDate.toLocaleDateString('es-ES')}`);
       doc.text(`Estado: ${order.status}`);
-      doc.text(`Total: $${order.total.toFixed(2)}`);
+      doc.text(`Tasa de cambio: Bs${order.dolarValue.toFixed(2)} por $1`);
       doc.moveDown();
 
-      // Información del cliente
-      doc.fontSize(14).text('INFORMACIÓN DEL CLIENTE:');
-      doc.fontSize(12);
+      // Línea separadora
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor('#bdc3c7').stroke();
+      doc.moveDown();
+
+      // ===== Información del cliente =====
+      doc.fontSize(14).fillColor('#2c3e50').text('Información del Cliente', { underline: true });
+      doc.moveDown(0.5);
+
+      doc.fontSize(12).fillColor('black');
       doc.text(`Nombre: ${order.user.name}`);
       doc.text(`Email: ${order.user.email}`);
       doc.moveDown();
 
-      // Productos
-      doc.fontSize(14).text('PRODUCTOS:');
+      // Línea separadora
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor('#bdc3c7').stroke();
       doc.moveDown();
 
+      // ===== Productos =====
+      doc.fontSize(14).fillColor('#2c3e50').text('Productos', { underline: true });
+      doc.moveDown(0.5);
+
       order.orderDetails.forEach((detail, index) => {
-        const subtotal = detail.unitPrice * detail.quantity;
-        
-        doc.text(`${index + 1}. ${detail.product.name}`);
+        const subtotalDollars = detail.unitPrice * detail.quantity;
+        const subtotalBolivares = subtotalDollars * order.dolarValue;
+
+        doc.fontSize(12).fillColor('#34495e').text(`${index + 1}. ${detail.product.name}`);
+        doc.fillColor('black');
         doc.text(`   Cantidad: ${detail.quantity}`);
-        doc.text(`   Precio unitario: $${detail.unitPrice.toFixed(2)}`);
-        doc.text(`   Subtotal: $${subtotal.toFixed(2)}`);
+        doc.text(
+          `   Precio unitario: $${detail.unitPrice.toFixed(2)}  |  Bs${(
+            detail.unitPrice * order.dolarValue
+          ).toFixed(2)}`
+        );
+        doc.text(
+          `   Subtotal: $${subtotalDollars.toFixed(2)}  |  Bs${subtotalBolivares.toFixed(2)}`
+        );
         doc.moveDown();
       });
 
-      // Total
+      // Línea separadora
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor('#3498db').stroke();
       doc.moveDown();
-      doc.fontSize(16).text(`TOTAL: $${order.total.toFixed(2)}`, { align: 'right' });
+
+      // ===== Totales =====
+      const totalBolivares = order.total * order.dolarValue;
+
+      doc
+        .fontSize(14)
+        .fillColor('#27ae60')
+        .text(`TOTAL EN DÓLARES: $${order.total.toFixed(2)}`, { align: 'right' });
+      doc
+        .fontSize(14)
+        .fillColor('#27ae60')
+        .text(`TOTAL EN BOLÍVARES: Bs${totalBolivares.toFixed(2)}`, { align: 'right' });
 
       doc.end();
     });
