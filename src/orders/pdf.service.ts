@@ -13,7 +13,6 @@ export class PdfService {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      // ===== Encabezado principal =====
       doc
         .fontSize(22)
         .fillColor('#2c3e50')
