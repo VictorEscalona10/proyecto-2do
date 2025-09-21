@@ -29,5 +29,7 @@ Este es el backend de un sistema de gestión de usuarios, autenticación y produ
 ---
 
 <p align="center">
-  <b>¡Feliz desarrollo con NestJS y Prisma! 🎂🚀</b>
+  <b>Desarrollado con ❤️ usando NestJS y Prisma</b><br/>
+  <i>Proyecto académico - Pastelería</i>
 </p>
+
