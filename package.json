@@ -27,6 +27,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.4.19",
     "@nestjs/swagger": "^7.4.2",
+    "@nestjs/throttler": "^6.4.0",
     "@prisma/client": "^6.0.1",
     "@scalar/nestjs-api-reference": "^1.0.1",
     "@types/handlebars": "^4.0.40",

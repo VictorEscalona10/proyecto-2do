@@ -7,20 +7,30 @@ import { CategoryModule } from './category/category.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { UsersModule } from './users/users.module';
 import { OrdersModule } from './orders/orders.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), 
+    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     ProductsModule,
     CategoryModule,
     PasswordResetModule,
     UsersModule,
     OrdersModule,
+    ThrottlerModule.forRoot({
+      throttlers: [
+        { ttl: parseInt(process.env.THROTTLE_TTL), limit: parseInt(process.env.THROTTLE_LIMIT) }
+      ],
+
+    }),
   ],
   controllers: [AppController],
-  providers: [
-    
-  ],
+  providers: [{
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    }],
 })
 export class AppModule { }
