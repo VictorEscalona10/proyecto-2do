@@ -11,6 +11,7 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);
@@ -28,7 +29,7 @@ export class OrderController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
-  
+
   async findOne(@Param('id') id: string) {
     return this.orderService.findOne(parseInt(id));
   }
