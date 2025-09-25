@@ -21,7 +21,6 @@ async function bootstrap() {
         styleSrc: ["'self'", "https://cdn.jsdelivr.net", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "https:"],
         fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
-        // Agrega otras directivas según necesites
       },
     },
   }));
@@ -53,7 +52,7 @@ async function bootstrap() {
     '/reference',
     apiReference({
       content: document, // Pasas directamente el documento generado
-      theme: 'purples',
+      theme: 'dark',
     }),
   );
 

@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import { HttpException } from '@nestjs/common/exceptions/http.exception';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDto } from './dto/createProduct.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, Product } from '@prisma/client';
 
 
 @Injectable()
@@ -64,4 +64,27 @@ export class ProductsService {
     }
   }
 
+  async searchByCategory(name: string): Promise<Product[]> {
+    try {
+        const category = await this.prisma.category.findUnique({
+            where: { name }
+        });
+
+        if (!category) {
+            throw new NotFoundException('Categoría no encontrada');
+        }
+
+        const products = await this.prisma.product.findMany({
+            where: {
+                category: { name }
+            },
+        });
+
+        return products;
+
+    } catch (error) {
+        if (error instanceof HttpException) throw error;
+        throw new InternalServerErrorException('Error al buscar productos por categoría');
+    }
+}
 }

@@ -17,14 +17,19 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/createProduct.dto';
-import { Product } from '@prisma/client';
+import { UseGuards } from '@nestjs/common';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Roles } from 'src/auth/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @Controller('products')
 export class ProductsController {
     constructor(private readonly productsService: ProductsService) { }
 
     @Post()
-    /* UseGuards(JWTAuthGuard) */
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
     @HttpCode(HttpStatus.CREATED)
     @UseInterceptors(
         FileInterceptor('image', {
@@ -59,5 +64,10 @@ export class ProductsController {
     @HttpCode(HttpStatus.OK)
     async searchProducts(@Query('name') name: string) {
         return this.productsService.searchByName(name);
+    }
+
+    @Get('/search/category')
+    async searchProductsByCategory(@Query('name') name: string){
+        return this.productsService.searchByCategory(name)
     }
 }
