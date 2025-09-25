@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, UseGuards, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Res, UseGuards, Get, Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
@@ -13,12 +13,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   async loginUser(@Body() loginDto: LoginDto, @Res() res: Response) {
     const result = await this.authService.login(loginDto, res);
     return res.json(result); 
   }
 
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
   async registerUser(@Body() registerDto: RegisterDto){
     const result = await this.authService.register(registerDto, UserRole.USUARIO);
     return result;
@@ -27,13 +29,15 @@ export class AuthController {
   @Post('register/worker')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMINISTRADOR)
-  
+  @HttpCode(HttpStatus.CREATED)
+
   async registerWorker(@Body() registerDto: RegisterDto){
     const result = await this.authService.register(registerDto, UserRole.TRABAJADOR);
     return result;
   }
   
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   async logoutUser(@Res() res: Response) {
     res.clearCookie('jwt');
     return res.json({ message: 'Sesion cerrada exitosamente' });

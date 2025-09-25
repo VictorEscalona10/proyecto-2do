@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/createCategory.dto';
 import { UseGuards } from '@nestjs/common';
@@ -12,6 +12,7 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Get()
+  @HttpCode(HttpStatus.OK)
   findAll() {
     return this.categoryService.findAll();
   }
@@ -19,6 +20,7 @@ export class CategoryController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
+  @HttpCode(HttpStatus.CREATED)
 
   create(@Body() createCategoryDto: CreateCategoryDto) {
     const lower = createCategoryDto.name.toLowerCase();
@@ -29,7 +31,8 @@ export class CategoryController {
   @Delete(':name')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
-  
+  @HttpCode(HttpStatus.NO_CONTENT)
+
   delete(@Param('name') name: string) {
     return this.categoryService.delete(name);
   }
