@@ -27,6 +27,7 @@ export class AuthController {
   @Post('register/worker')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMINISTRADOR)
+  
   async registerWorker(@Body() registerDto: RegisterDto){
     const result = await this.authService.register(registerDto, UserRole.TRABAJADOR);
     return result;

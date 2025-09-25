@@ -15,6 +15,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMINISTRADOR)
   @HttpCode(HttpStatus.OK)
+  
   async searchUsers(@Query() query: UsersSearchDto) {
     return this.usersService.search(query);
   }
@@ -23,6 +24,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMINISTRADOR)
   @HttpCode(HttpStatus.NO_CONTENT)
+
   async deleteUser(@Query('email') email: string) {
     return this.usersService.delete(email);
   }
