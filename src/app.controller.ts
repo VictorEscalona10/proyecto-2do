@@ -12,7 +12,7 @@ export class AppController {
   })
   @ApiResponse({ status: 200, description: 'Acceso concedido. El token es válido.' })
   @ApiResponse({ status: 401, description: 'No autorizado. El token falta o es inválido.' })
-  @ApiBearerAuth() // <-- ¡Clave! Indica que este endpoint necesita un token JWT.
+  @ApiBearerAuth() 
   @Get('protected')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
