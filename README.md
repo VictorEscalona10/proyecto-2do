@@ -55,7 +55,7 @@ Este proyecto está construido con tecnologías modernas y robustas:
 - **Gestión de Productos**: Creación, búsqueda por nombre y categoría. La creación está restringida por rol.
 - **Subida de Archivos**: Manejo de subida de imágenes para productos con `multipart/form-data`.
 - **Seguridad**: Implementación de `Helmet` para cabeceras de seguridad, y `express-rate-limit` para prevenir ataques de fuerza bruta.
-- **Documentación Interactiva**: Endpoints documentados con Scalar, accesibles en `/api`.
+- **Documentación Interactiva**: Endpoints documentados con Scalar, accesibles en `/reference`.
 
 ## 🏁 Empezando
 
@@ -71,7 +71,7 @@ Sigue estos pasos para tener una copia local del proyecto funcionando.
 
 1.  **Clona el repositorio:**
     ```bash
-    git clone https://github.com/your-username/your-repo-name.git
+    git clone https://github.com/VictorEscalona10/proyecto2do.git
     cd backend
     ```
 
@@ -139,7 +139,7 @@ $ pnpm run start:prod
 
 La API está completamente documentada usando **Scalar**. Una vez que el servidor esté en funcionamiento, puedes acceder a la documentación interactiva en la siguiente URL:
 
-**http://localhost:3000/api**
+**http://localhost:3000/reference**
 
 Desde allí, podrás ver todos los endpoints, sus parámetros, respuestas y probarlos directamente, incluyendo los endpoints protegidos con JWT.
 
