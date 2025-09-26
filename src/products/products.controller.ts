@@ -22,11 +22,27 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Products')
 @Controller('products')
 export class ProductsController {
     constructor(private readonly productsService: ProductsService) { }
 
+    @ApiOperation({
+        summary: 'Crear un nuevo producto (Protegido por Rol)',
+        description: 'Crea un nuevo producto. Requiere un token JWT y que el usuario tenga el rol de TRABAJADOR o ADMINISTRADOR.',
+    })
+    @ApiConsumes('multipart/form-data') // Indica que se espera un form-data
+    @ApiBody({
+        description: 'Datos del producto y la imagen a subir. **Autorización: Requiere rol `TRABAJADOR` o `ADMINISTRADOR`**.',
+        type: CreateProductDto,
+    })
+    @ApiResponse({ status: 201, description: 'Producto creado exitosamente.' })
+    @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
+    @ApiResponse({ status: 401, description: 'No autorizado (token inválido o ausente).' })
+    @ApiResponse({ status: 403, description: 'Prohibido (el usuario no tiene el rol requerido).' })
+    @ApiBearerAuth() // Indica que necesita JWT
     @Post()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
@@ -60,14 +76,24 @@ export class ProductsController {
         return this.productsService.create({ ...body, imageUrl });
     }
 
+    @ApiOperation({
+        summary: 'Buscar productos por nombre (Público)',
+        description: 'Endpoint público para buscar productos que coincidan con un nombre.',
+    })
+    @ApiResponse({ status: 200, description: 'Lista de productos encontrados.' })
     @Get('search/name')
     @HttpCode(HttpStatus.OK)
     async searchProducts(@Query('name') name: string) {
         return this.productsService.searchByName(name);
     }
 
+    @ApiOperation({
+        summary: 'Buscar productos por categoría (Público)',
+        description: 'Endpoint público para buscar productos por el nombre de la categoría.',
+    })
+    @ApiResponse({ status: 200, description: 'Lista de productos encontrados en la categoría.' })
     @Get('/search/category')
-    async searchProductsByCategory(@Query('name') name: string){
+    async searchProductsByCategory(@Query('name') name: string) {
         return this.productsService.searchByCategory(name)
     }
 }
