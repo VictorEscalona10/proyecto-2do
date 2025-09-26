@@ -1,9 +1,9 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  HttpCode, 
-  Get, 
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  Get,
   Query,
   HttpStatus,
   Res
@@ -11,23 +11,22 @@ import {
 import { PasswordResetService } from './password-reset.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { Response } from 'express';
+import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('Password Reset')
 @Controller('password-reset')
 export class PasswordResetController {
   constructor(
     private readonly passwordResetService: PasswordResetService
-  ) {}
+  ) { }
 
-  /**
-   * Solicitar recuperación de contraseña
-   * POST /password-reset/forgot-password
-   */
+  @ApiOperation({ summary: "Solicitar reseteo de contraseña (Publico)", description: "Inicia el proceso de recuperación de contraseña. El usuario recibe un email con un enlace." })
+  @ApiResponse({ status: 200, description: 'Si el email existe, se habrá enviado un correo de recuperación.' })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(
     @Body() forgotPasswordDto: ForgotPasswordDto
-  ): Promise<{ 
+  ): Promise<{
     message: string;
     success: boolean;
   }> {
@@ -45,15 +44,17 @@ export class PasswordResetController {
     }
   }
 
-  /**
-   * Restablecer contraseña con token
-   * POST /password-recovery/reset-password
-   */
+  @ApiOperation({
+    summary: 'Resetear la contraseña (Público)',
+    description: 'Permite al usuario establecer una nueva contraseña utilizando el token recibido por email.',
+  })
+  @ApiResponse({ status: 200, description: 'Contraseña actualizada exitosamente.' })
+  @ApiResponse({ status: 400, description: 'El token es inválido, ha expirado o las contraseñas no coinciden.' })
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto
-  ): Promise<{ 
+  ): Promise<{
     message: string;
     success: boolean;
   }> {
@@ -65,7 +66,7 @@ export class PasswordResetController {
       };
     } catch (error) {
       let errorMessage = 'Error al restablecer la contraseña.';
-      
+
       if (error.response?.message) {
         errorMessage = error.response.message;
       } else if (error.message) {
@@ -86,7 +87,7 @@ export class PasswordResetController {
   @Get('validate-token')
   async validateToken(
     @Query('token') token: string
-  ): Promise<{ 
+  ): Promise<{
     valid: boolean;
     message?: string;
     email?: string;
@@ -104,8 +105,8 @@ export class PasswordResetController {
       return {
         valid: validationResult.valid,
         email: validationResult.email,
-        message: validationResult.valid 
-          ? 'Token válido' 
+        message: validationResult.valid
+          ? 'Token válido'
           : 'Token inválido o expirado'
       };
     } catch (error) {
@@ -114,23 +115,5 @@ export class PasswordResetController {
         message: 'Error al validar el token'
       };
     }
-  }
-
-  /**
-   * Health check del módulo
-   * GET /password-recovery/health
-   */
-  @Get('health')
-  @HttpCode(HttpStatus.OK)
-  async healthCheck(): Promise<{ 
-    status: string;
-    timestamp: string;
-    service: string;
-  }> {
-    return {
-      status: 'OK',
-      timestamp: new Date().toISOString(),
-      service: 'Password Recovery Service'
-    };
   }
 }
