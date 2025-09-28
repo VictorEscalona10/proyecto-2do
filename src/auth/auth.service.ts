@@ -95,4 +95,28 @@ export class AuthService {
 
     return { message: 'usuario registrado exitosamente'};
   }
+
+  async getCurrentUser(token: string): Promise<{ authenticated: boolean; user?: any; message?: string }> {
+    if (!token) {
+      throw new UnauthorizedException('No autenticado');
+    }
+
+    try {
+      const decoded = this.jwtService.verify(token);
+      
+      const user = {
+        id: decoded.sub || decoded.id,
+        email: decoded.email,
+        name: decoded.name,
+        role: decoded.role
+      };
+
+      return {
+        authenticated: true,
+        user: user
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido o expirado');
+    }
+  }
 }

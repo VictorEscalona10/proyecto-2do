@@ -1,7 +1,7 @@
-import { Controller, Post, Body, Res, UseGuards, Get, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Res, UseGuards, Get, Query, HttpCode, HttpStatus, Req, UnauthorizedException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { RegisterDto } from './dto/register.dto';
 import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -56,4 +56,25 @@ export class AuthController {
     return res.json({ message: 'Sesion cerrada exitosamente' });
   }
 
+  @Get('me')
+  @ApiOperation({summary: "Obtener usuario actual", description: "Obtiene el usuario autenticado actualmente a partir del token JWT en las cookies."})
+  @ApiResponse({ status: 200, description: 'Usuario autenticado devuelto.' })
+  @ApiResponse({ status: 401, description: 'No autenticado o token inválido.' })
+  async getCurrentUser(@Req() req: Request, @Res() res: Response) {
+    try {
+      const token = req.cookies?.jwt || req.cookies?.token;
+      const result = await this.authService.getCurrentUser(token);
+      return res.status(200).json(result);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        return res.status(401).json({
+          authenticated: false,
+          message: error.message,
+        });
+      }
+      return res.status(500).json({
+        message: 'Error interno del servidor',
+      });
+    }
+  }
 }
