@@ -10,7 +10,7 @@ export class UsersService {
 
     async search(query: UsersSearchDto) {
         try {
-            const users = await this.prisma.user.findUnique({
+            const user = await this.prisma.user.findUnique({
                 where: {
                     email: query.email
                 },
@@ -21,13 +21,13 @@ export class UsersService {
                 },
             });
 
-            if (!users) {
+            if (!user) {
                 throw new NotFoundException('No se encontraron usuarios con los criterios especificados');
             }
 
             return {
                 message: 'Usuario encontrado',
-                data: users,
+                data: user,
             };
 
         } catch (error) {
