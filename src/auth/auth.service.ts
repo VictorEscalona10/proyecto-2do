@@ -27,6 +27,7 @@ export class AuthService {
     const findUser = await this.prisma.user.findUnique({
       where: { email },
       select: {
+        id: true,
         email: true,
         password: true,
         role: true,
@@ -43,6 +44,7 @@ export class AuthService {
     }
 
     const payload = {
+      id: findUser.id,
       email: findUser.email,
       role: findUser.role
     };
