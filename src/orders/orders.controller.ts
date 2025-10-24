@@ -1,10 +1,11 @@
-import { Controller, Post, Body, Get, Param, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, HttpCode, HttpStatus, UseGuards, Patch, Put } from '@nestjs/common';
 import { OrderService } from './orders.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { UpdateStatusOrderDto } from './dto/updateStatusOrder.dto';
 
 @Controller('orders')
 export class OrderController {
@@ -34,5 +35,13 @@ export class OrderController {
 
   async findOne(@Param('id') id: string) {
     return this.orderService.findOne(parseInt(id));
+  }
+
+  @Patch('/update')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
+
+  async updateStatus(@Body() data: UpdateStatusOrderDto) {
+    return this.orderService.updateStatus(data);
   }
 }

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEmail, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, Matches, IsInt } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
@@ -47,4 +47,27 @@ export class RegisterDto {
   @IsString({ message: 'La contraseña debe ser un texto' })
   @IsNotEmpty({ message: 'La confirmación de contraseña es requerida' })
   repeatPassword: string;
+
+  @ApiProperty({
+    description: 'Número de teléfono del usuario',
+    example: '+58123456789',
+    required: true,
+    pattern: '^\\+34\\d{9}$',
+  })
+  @IsString()
+  @Matches(/^\+58(412|414|416|424)\d{7}$/, {
+    message:
+      'El número debe tener el formato +58412XXXXXXX y comenzar con 412, 414, 416 o 424',
+  })
+  @IsNotEmpty({ message: 'El número de teléfono es requerido' })
+  phoneNumber: string;
+
+  @ApiProperty({
+    description: 'Número de Cedula del usuario',
+    example: 29000000,
+    required: true,
+  })
+  @IsInt()
+  @IsNotEmpty({ message: 'El número de cédula es requerido' })
+  identification: number;
 }

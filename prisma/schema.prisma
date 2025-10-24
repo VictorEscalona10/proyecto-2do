@@ -14,6 +14,8 @@ model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
+  phoneNumber String @unique
+  Identification Int @unique
   password  String
   role      UserRole @default(USUARIO)
   createdAt DateTime @default(now())
@@ -46,7 +48,7 @@ model Order {
   user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId       Int?
   orderDate    DateTime      @default(now())
-  status       String        @default("Pending")
+  status       Status        @default(PENDING)
   total        Decimal
   orderDetails OrderDetail[]
   payments     Payment[]
@@ -95,6 +97,27 @@ model PasswordResetToken {
   @@index([userId])
   @@index([expiresAt])
   @@index([isValid])
+}
+
+model Chat {
+  id        String   @id @default(uuid())
+  clientId  String
+  adminId   String
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  text      String
+  userId    String
+  chatId    String
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {

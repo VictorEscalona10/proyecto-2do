@@ -63,7 +63,7 @@ export class AuthService {
   }
 
   async register(user: RegisterDto, role?: UserRole) {
-    const { name, email, password, repeatPassword } = user;
+    const { name, email, password, repeatPassword, identification, phoneNumber } = user;
 
     if (password !== repeatPassword) {
       throw new ConflictException('Las contraseñas no coinciden');
@@ -85,6 +85,8 @@ export class AuthService {
       email: email,
       password: hashedPassword,
       role: role ?? UserRole.USUARIO,
+      Identification: identification,
+      phoneNumber: phoneNumber,
       },
       select: {
       name: true,
