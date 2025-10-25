@@ -35,7 +35,7 @@ export class AuthService {
     });
 
     if (!findUser) {
-      throw new InternalServerErrorException('Usuario no encontrado');
+      throw new UnauthorizedException('Usuario no encontrado');
     }
 
     const isPasswordValid = await this.comparePasswords(password, findUser.password);
@@ -81,46 +81,79 @@ export class AuthService {
 
     const newUser = await this.prisma.user.create({
       data: {
-      name: name.toLowerCase(),
-      email: email,
-      password: hashedPassword,
-      role: role ?? UserRole.USUARIO,
-      Identification: identification,
-      phoneNumber: phoneNumber,
+        name: name.toLowerCase(),
+        email: email,
+        password: hashedPassword,
+        role: role ?? UserRole.USUARIO,
+        Identification: identification,
+        phoneNumber: phoneNumber,
       },
       select: {
-      name: true,
-      email: true,
-      role: true,
+        name: true,
+        email: true,
+        role: true,
       },
     }).catch(error => {
       throw new InternalServerErrorException('Error al registrar el usuario', error);
     });
 
-    return { message: 'usuario registrado exitosamente'};
+    return { message: 'usuario registrado exitosamente' };
   }
 
   async getCurrentUser(token: string): Promise<{ authenticated: boolean; user?: any; message?: string }> {
     if (!token) {
-      throw new UnauthorizedException('No autenticado');
+      return {
+        authenticated: false,
+        message: 'No autenticado - Token faltante'
+      };
     }
 
     try {
+      // Verificar el token
       const decoded = this.jwtService.verify(token);
-      
-      const user = {
-        id: decoded.sub || decoded.id,
-        email: decoded.email,
-        name: decoded.name,
-        role: decoded.role
-      };
+
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: decoded.id
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        }
+      });
+
+      if (!user) {
+        return {
+          authenticated: false,
+          message: 'Usuario no encontrado en la base de datos'
+        };
+      }
 
       return {
         authenticated: true,
         user: user
       };
     } catch (error) {
-      throw new UnauthorizedException('Token inválido o expirado');
+      console.error('❌ Error verificando token:', error);
+
+      if (error.name === 'TokenExpiredError') {
+        return {
+          authenticated: false,
+          message: 'Token expirado'
+        };
+      } else if (error.name === 'JsonWebTokenError') {
+        return {
+          authenticated: false,
+          message: 'Token inválido'
+        };
+      } else {
+        return {
+          authenticated: false,
+          message: 'Error verificando token'
+        };
+      }
     }
   }
 }

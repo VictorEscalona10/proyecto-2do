@@ -4,6 +4,7 @@ import { CreateOrderDto } from './dto/createOrder.dto';
 import { MailService } from '../mail/mail.service';
 import { PdfService } from './pdf.service';
 import { UpdateStatusOrderDto } from './dto/updateStatusOrder.dto';
+import { Status } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -207,7 +208,7 @@ export class OrderService {
     try {
       return await this.prisma.order.update({
         where: { id },
-        data: { status },
+        data: { status: status as Status },
       });
     } catch (error: any) {
       if (error.code === 'P2025') {
