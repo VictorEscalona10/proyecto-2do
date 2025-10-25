@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { JoinChatDto } from './dto/join-chat.dto';
+import { SendMessageDto } from './dto/send-message.dto';
+import { GetChatMessagesDto } from './dto/get-chat-messages.dto';
+import { CloseChatDto } from './dto/close-chat.dto';
 
 @Injectable()
 export class ChatService {
@@ -12,7 +16,7 @@ export class ChatService {
 		return id?.toString?.() ?? String(id);
 	}
 
-	async canAccessChat(user: any, chatId: string) {
+		async canAccessChat(user: any, chatId: string) {
 		const userId = this.toStringId(user.id);
 		const chat = await this.prisma.chat.findFirst({
 			where: {
@@ -23,49 +27,49 @@ export class ChatService {
 		return chat;
 	}
 
-	async joinChat(user: any, chatId: string) {
-		const chat = await this.canAccessChat(user, chatId);
-		if (!chat) {
-			this.logger.warn(`Usuario ${user?.email} no tiene acceso al chat ${chatId}`);
-			throw new WsException('No tienes acceso a este chat');
-		}
-		return { success: true, chat, message: 'Unido al chat correctamente' };
+		async joinChat(user: any, dto: JoinChatDto) {
+			const chat = await this.canAccessChat(user, dto.chatId);
+			if (!chat) {
+				this.logger.warn(`Usuario ${user?.email} no tiene acceso al chat ${dto.chatId}`);
+				throw new WsException('No tienes acceso a este chat');
+			}
+			return { success: true, chat, message: 'Unido al chat correctamente' };
 	}
 
-	async sendMessage(user: any, chatId: string, text: string) {
-		const chat = await this.prisma.chat.findFirst({ where: { id: chatId, status: 'active' } });
-		if (!chat) {
-			this.logger.warn(`Chat ${chatId} no encontrado`);
-			throw new WsException('Chat no encontrado');
+		async sendMessage(user: any, dto: SendMessageDto) {
+			const chat = await this.prisma.chat.findFirst({ where: { id: dto.chatId, status: 'active' } });
+			if (!chat) {
+				this.logger.warn(`Chat ${dto.chatId} no encontrado`);
+				throw new WsException('Chat no encontrado');
+			}
+
+			const userId = this.toStringId(user.id);
+			const isAdmin = user.role === 'ADMINISTRADOR' || user.role === 'TRABAJADOR';
+			const hasAccess = isAdmin ? chat.adminId === userId : chat.clientId === userId;
+
+			if (!hasAccess) {
+				this.logger.warn(`Usuario ${user?.email} no tiene permisos para escribir en chat ${dto.chatId}`);
+				throw new WsException('No tienes permisos para escribir en este chat');
+			}
+
+			const message = await this.prisma.message.create({
+				data: {
+					text: dto.text,
+					userId,
+					chatId: dto.chatId,
+					isAdmin,
+				},
+			});
+
+			const messageWithUser = {
+				...message,
+				userName: user.name || user.email,
+				userRole: user.role,
+			};
+
+			this.logger.log(`Mensaje guardado en DB para chat ${dto.chatId} por ${user?.email}`);
+			return { success: true, message: messageWithUser };
 		}
-
-		const userId = this.toStringId(user.id);
-		const isAdmin = user.role === 'ADMINISTRADOR' || user.role === 'TRABAJADOR';
-		const hasAccess = isAdmin ? chat.adminId === userId : chat.clientId === userId;
-
-		if (!hasAccess) {
-			this.logger.warn(`Usuario ${user?.email} no tiene permisos para escribir en chat ${chatId}`);
-			throw new WsException('No tienes permisos para escribir en este chat');
-		}
-
-		const message = await this.prisma.message.create({
-			data: {
-				text,
-				userId,
-				chatId,
-				isAdmin,
-			},
-		});
-
-		const messageWithUser = {
-			...message,
-			userName: user.name || user.email,
-			userRole: user.role,
-		};
-
-		this.logger.log(`Mensaje guardado en DB para chat ${chatId} por ${user?.email}`);
-		return { success: true, message: messageWithUser };
-	}
 
 	async startChat(user: any) {
 		if (user.role !== 'USUARIO') {
@@ -112,24 +116,24 @@ export class ChatService {
 		return { success: true, chats };
 	}
 
-	async getChatMessages(user: any, chatId: string) {
-		const chat = await this.canAccessChat(user, chatId);
-		if (!chat) {
-			this.logger.warn(`Usuario ${user?.email} no tiene acceso al chat ${chatId}`);
-			throw new WsException('No tienes acceso a este chat');
+		async getChatMessages(user: any, dto: GetChatMessagesDto) {
+			const chat = await this.canAccessChat(user, dto.chatId);
+			if (!chat) {
+				this.logger.warn(`Usuario ${user?.email} no tiene acceso al chat ${dto.chatId}`);
+				throw new WsException('No tienes acceso a este chat');
+			}
+
+			const messages = await this.prisma.message.findMany({ where: { chatId: dto.chatId }, orderBy: { createdAt: 'asc' } });
+			return { success: true, messages };
 		}
 
-		const messages = await this.prisma.message.findMany({ where: { chatId }, orderBy: { createdAt: 'asc' } });
-		return { success: true, messages };
-	}
+		async closeChat(user: any, dto: CloseChatDto) {
+			if (user.role !== 'ADMINISTRADOR' && user.role !== 'TRABAJADOR') {
+				throw new WsException('No tienes permisos para cerrar chats');
+			}
 
-	async closeChat(user: any, chatId: string) {
-		if (user.role !== 'ADMINISTRADOR' && user.role !== 'TRABAJADOR') {
-			throw new WsException('No tienes permisos para cerrar chats');
+			const chat = await this.prisma.chat.update({ where: { id: dto.chatId }, data: { status: 'closed' } });
+			this.logger.log(`Chat ${dto.chatId} cerrado por ${user?.email}`);
+			return { success: true, chat, message: 'Chat cerrado correctamente' };
 		}
-
-		const chat = await this.prisma.chat.update({ where: { id: chatId }, data: { status: 'closed' } });
-		this.logger.log(`Chat ${chatId} cerrado por ${user?.email}`);
-		return { success: true, chat, message: 'Chat cerrado correctamente' };
-	}
 }

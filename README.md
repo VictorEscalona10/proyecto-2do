@@ -2,164 +2,170 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="NestJS Logo" /></a>
 </p>
 
-[<p align="center"><b>Backend - Sistema de Gestión para Pastelería</b></p>](https://github.com/your-username/your-repo-name)
+# Backend — Sistema de Gestión para Pastelería (NestJS + Prisma)
 
-<p align="center">
-  Backend robusto y escalable para una aplicación de pastelería, construido con NestJS, Prisma y TypeScript. Incluye autenticación JWT, gestión de roles, manejo de productos, órdenes, y mucho más.
-</p>
+Este repositorio contiene el backend de la aplicación: una API REST y un sistema de chat en tiempo real. Está implementado en TypeScript con NestJS y Prisma y pensado para uso académico y desarrollo iterativo.
 
-<p align="center">
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-  <a href="https://opensource.org/licenses/MIT" target="_blank"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="Package License" /></a>
-  <a href="https://github.com/your-username/your-repo-name/actions/workflows/ci.yml" target="_blank"><img src="https://github.com/your-username/your-repo-name/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-</p>
+> Nota: este README fue ampliado para describir cambios recientes: la lógica del chat fue movida del Gateway a `ChatService`, se añadieron DTOs para mensajes WebSocket y hay un guard para autenticar sockets (`WebsocketAuthGuard`).
 
 ---
 
-## 📖 Tabla de Contenidos
+## Contenido del repositorio
 
-- [Acerca del Proyecto](#-acerca-del-proyecto)
-- [🚀 Tecnologías Principales](#-tecnologías-principales)
-- [✨ Funcionalidades](#-funcionalidades)
-- [🏁 Empezando](#-empezando)
-  - [Prerrequisitos](#prerrequisitos)
-  - [Instalación](#instalación)
-- [🔧 Variables de Entorno](#-variables-de-entorno)
-- [▶️ Uso](#-uso)
-- [📚 Documentación de la API](#-documentación-de-la-api)
-- [🛡️ Seguridad](#-seguridad)
-- [📄 Licencia](#-licencia)
+- `src/` — código fuente del backend
+- `src/chat/` — gateway, servicio, DTOs y guard del chat en tiempo real
+- `src/auth/` — controladores y servicios de autenticación
+- `src/prisma/` — módulo y servicio para inyectar Prisma
+- `prisma/` — esquema y migraciones de Prisma
+- `uploads/` — archivos subidos (imágenes, etc.)
+- `package.json` — scripts y dependencias
 
 ---
 
-## 🎯 Acerca del Proyecto
+## Descripción completa
 
-Este proyecto es el corazón de un sistema de comercio electrónico para una pastelería. Proporciona una API RESTful para gestionar usuarios, productos, categorías y órdenes. Está diseñado para ser seguro, eficiente y fácil de mantener, siguiendo las mejores prácticas de desarrollo con NestJS.
+Este backend cumple dos grandes responsabilidades:
 
-## 🚀 Tecnologías Principales
+1. API REST para gestionar usuarios, productos, órdenes y otras entidades del negocio.
+2. Sistema de chat en tiempo real entre clientes y personal (administradores/trabajadores).
 
-Este proyecto está construido con tecnologías modernas y robustas:
+Arquitectura y patrones importantes:
 
-- **[NestJS](https://nestjs.com/)**: Un framework progresivo de Node.js para construir aplicaciones eficientes y escalables.
-- **[Prisma](https://www.prisma.io/)**: ORM de nueva generación para Node.js y TypeScript.
-- **[PostgreSQL](https://www.postgresql.org/)**: Como sistema de gestión de base de datos.
-- **[JWT (JSON Web Tokens)](https://jwt.io/)**: Para la autenticación segura y basada en tokens.
-- **[Swagger (Scalar)](https://docs.nestjs.com/openapi/introduction)**: Para la generación automática de documentación de la API.
-- **[TypeScript](https://www.typescriptlang.org/)**: Para un código más seguro y mantenible.
+- Módulos por dominio (separación clara entre `auth`, `users`, `products`, `orders`, `chat`, etc.).
+- Servicios para la lógica de negocio; controladores/gateways para entrada/salida.
+- Prisma para consultas y migraciones de BD.
+- Uso de DTOs y `class-validator` para validar la entrada de datos.
 
-## ✨ Funcionalidades
+### Autenticación y autorización
 
-- **Autenticación y Autorización**: Sistema completo de registro, inicio de sesión (`/auth/login`, `/auth/register`) y perfil de usuario (`/auth/profile`) protegido con JWT.
-- **Gestión de Roles**: Roles de `CLIENTE`, `TRABAJADOR` y `ADMINISTRADOR` para controlar el acceso a endpoints críticos (ej. creación de productos).
-- **Recuperación de Contraseña**: Flujo seguro para solicitar y restablecer contraseñas olvidadas.
-- **Gestión de Productos**: Creación, búsqueda por nombre y categoría. La creación está restringida por rol.
-- **Subida de Archivos**: Manejo de subida de imágenes para productos con `multipart/form-data`.
-- **Seguridad**: Implementación de `Helmet` para cabeceras de seguridad, y `express-rate-limit` para prevenir ataques de fuerza bruta.
-- **Documentación Interactiva**: Endpoints documentados con Scalar, accesibles en `/reference`.
+- Autenticación por JWT (generado en `/auth/login`).
+- En el flujo actual se entrega el JWT al cliente (normalmente se guarda en una cookie `jwt`).
+- Guards y decoradores controlan la autorización basada en roles (`USUARIO`, `TRABAJADOR`, `ADMINISTRADOR`).
 
-## 🏁 Empezando
+### Chat en tiempo real — detalles
 
-Sigue estos pasos para tener una copia local del proyecto funcionando.
+- El Gateway (`src/chat/chat.gateway.ts`) es responsable del transporte (socket.io) y de emitir/escuchar eventos.
+- La lógica (validaciones, creación de chats/mensajes, reglas de acceso) vive en `src/chat/chat.service.ts`.
+- DTOs para payloads WebSocket en `src/chat/dto/` (JoinChatDto, SendMessageDto, GetChatMessagesDto, CloseChatDto) y se recomiendan `ValidationPipe` para validar automáticamente.
 
-### Prerrequisitos
+Eventos principales del chat (socket.io):
 
-- Node.js (v18 o superior)
-- pnpm (o npm/yarn)
-- Docker (recomendado para la base de datos)
+- `start_chat` (cliente) -> inicia o recupera un chat para el usuario; el servidor une el socket a la sala del chat.
+- `join_chat` (cliente) -> pide unirse a una sala (validación de pertenencia).
+- `send_message` (cliente) -> envía mensaje; servidor lo persiste y emite `new_message` a la sala.
+- `get_my_chats` (cliente) -> obtiene lista de chats activos del usuario.
+- `get_chat_messages` (cliente) -> obtiene mensajes de un chat.
+- `close_chat` (admin/trabajador) -> cierra el chat y emite `chat_closed`.
 
-### Instalación
+Ejemplo de payloads:
 
-1.  **Clona el repositorio:**
-    ```bash
-    git clone https://github.com/VictorEscalona10/proyecto2do.git
-    cd backend
-    ```
+- `send_message`: { chatId: string, text: string }
+- `join_chat`: { chatId: string }
 
-2.  **Instala las dependencias:**
-    ```bash
-    pnpm install
-    ```
+Autenticación WebSocket:
 
-3.  **Configura las variables de entorno:**
-    Crea un archivo `.env` en la raíz del proyecto a partir del ejemplo:
-    ```bash
-    cp .env.example .env
-    ```
-    Luego, edita el archivo `.env` con tus propias credenciales.
+- `WebsocketAuthGuard` valida el JWT enviado por cookie (`jwt`) durante el handshake. El usuario autenticado queda disponible en `client.data.user`.
 
-4.  **Inicia la base de datos (con Docker):**
-    ```bash
-    docker-compose up -d
-    ```
+---
 
-5.  **Aplica las migraciones de la base de datos:**
-    Esto creará las tablas en tu base de datos según el esquema de Prisma.
-    ```bash
-    npx prisma migrate dev
-    ```
+## Instalación y puesta en marcha (rápida)
 
-## 🔧 Variables de Entorno
+Requisitos: Node.js v18+, pnpm/npm/yarn, PostgreSQL (se recomienda Docker para desarrollo).
 
-El archivo `.env` es crucial para la configuración. Aquí están las variables principales que necesitas definir:
+1. Clona el repo e instala dependencias:
 
-```env
-# .env.example
-
-# Base de Datos (PostgreSQL)
-DATABASE_URL="postgresql://user:password@localhost:5432/mydatabase?schema=public"
-
-# Autenticación JWT
-JWT_SECRET="TU_CLAVE_SECRETA_SUPER_SEGURA"
-JWT_EXPIRES_IN="1d"
-
-# Configuración del Servidor
-PORT=3000
-
-# Email (para recuperación de contraseña)
-EMAIL_HOST="smtp.example.com"
-EMAIL_PORT=587
-EMAIL_USER="user@example.com"
-EMAIL_PASS="password"
+```powershell
+git clone https://github.com/VictorEscalona10/proyecto2do.git
+cd backend
+pnpm install
 ```
 
-## ▶️ Uso
+2. Copia el `.env` y ajusta variables:
 
-Una vez instalado, puedes iniciar la aplicación en diferentes modos:
-
-```bash
-# Modo de desarrollo con hot-reload
-$ pnpm run start:dev
-
-# Modo de producción
-$ pnpm run build
-$ pnpm run start:prod
+```powershell
+cp .env.example .env
 ```
 
-## 📚 Documentación de la API
+3. Levanta la base de datos y aplica migraciones:
 
-La API está completamente documentada usando **Scalar**. Una vez que el servidor esté en funcionamiento, puedes acceder a la documentación interactiva en la siguiente URL:
+```powershell
+docker-compose up -d
+npx prisma migrate dev
+```
 
-**http://localhost:3000/reference**
+4. Corre en modo desarrollo:
 
-Desde allí, podrás ver todos los endpoints, sus parámetros, respuestas y probarlos directamente, incluyendo los endpoints protegidos con JWT.
-
-## 🛡️ Seguridad
-
-La seguridad es una prioridad en este proyecto. Se han implementado varias medidas:
-
-- **Autenticación JWT**: Todas las rutas sensibles están protegidas.
-- **Control de Acceso Basado en Roles (RBAC)**: Operaciones críticas como la creación de productos están restringidas a roles específicos.
-- **Validación de Datos**: Se usan `class-validator` y `class-transformer` para asegurar que los datos de entrada sean válidos.
-- **Protección de Cabeceras HTTP**: `Helmet` se utiliza para configurar cabeceras HTTP seguras.
-- **Limitación de Tasa de Peticiones**: `express-rate-limit` previene ataques de fuerza bruta.
-
-## 📄 Licencia
-
-Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información.
+```powershell
+pnpm run start:dev
+```
 
 ---
 
-<p align="center">
-  <b>Desarrollado con ❤️ usando NestJS y Prisma</b><br/>
-  <i>Proyecto Académico de Pastelería</i>
-</p>
+## Variables de entorno importantes
+
+- `DATABASE_URL` — URL de conexión a PostgreSQL
+- `JWT_SECRET` — secreto para firmar tokens JWT
+- `JWT_EXPIRES_IN` — tiempo de expiración del token
+- `PORT` — puerto del servidor
+- `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` — para el servicio de envío de correos
+
+Revisa `.env.example` para valores sugeridos.
+
+---
+
+## Cómo probar el chat (cliente mínimo)
+
+Puedes probar el chat con un pequeño cliente HTML/JS:
+
+1. Haz login via API REST (`POST /auth/login`) y guarda la cookie `jwt` que retorna.
+2. En el cliente usa socket.io-client y conecta con credenciales:
+
+```html
+<!-- ejemplo mínimo -->
+<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+<script>
+  const socket = io('http://localhost:3000', { withCredentials: true });
+
+  socket.on('connect', () => console.log('conectado', socket.id));
+  socket.emit('start_chat');
+  socket.on('new_message', msg => console.log('nuevo mensaje', msg));
+</script>
+```
+
+Si el JWT está en la cookie `jwt` y la conexión envía cookies (`withCredentials: true`), el guard debería autenticar el socket.
+
+Si quieres, puedo añadir un cliente listo para pruebas en `tools/chat-client/` que haga login, guarde la cookie y permita enviar/recibir mensajes.
+
+---
+
+## Scripts disponibles
+
+- `pnpm run start:dev` — desarrollo con hot-reload
+- `pnpm run build` — compilar TS
+- `pnpm run start:prod` — ejecutar la build
+- `pnpm run test` — ejecutar pruebas
+
+---
+
+## Troubleshooting y notas comunes
+
+- Si el socket no se autentica, verifica que la cookie `jwt` exista y que el cliente establezca `withCredentials`.
+- Errores de Prisma: revisa `DATABASE_URL` y aplica migraciones con `npx prisma migrate dev`.
+- Validaciones WebSocket: para que los DTOs se validen, añade `@UsePipes(new ValidationPipe({ transform: true }))` en los handlers del gateway.
+
+---
+
+## Contribuciones y desarrollo
+
+Si vas a extender el proyecto: crea ramas por feature, agrega tests para la lógica del `ChatService` y preserva la separación entre gateway (I/O) y service (lógica).
+
+---
+
+## Licencia
+
+Distribuido bajo la licencia MIT. Ver `LICENSE`.
+
+---
+
+Si quieres que incorpore ejemplos concretos (cliente HTML/JS listo, scripts para pruebas end-to-end o snippets de Postman), los genero en el siguiente paso.
+
