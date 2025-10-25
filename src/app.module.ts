@@ -10,6 +10,7 @@ import { OrdersModule } from './orders/orders.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
       ],
 
     }),
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [{

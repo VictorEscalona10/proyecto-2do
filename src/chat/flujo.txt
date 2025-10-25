@@ -1,0 +1,37 @@
+=================================== DESDE CLIENTE ==========================================
+
+// 1. Cliente inicia chat
+socket.emit('start_chat', { 
+  clientId: 'cliente_123', 
+  adminId: 'admin_1' 
+});
+
+// 2. Cliente se une al chat
+socket.emit('join_chat', { 
+  chatId: 'chat_uuid', 
+  userId: 'cliente_123' 
+});
+
+// 3. Cliente envía mensaje
+socket.emit('send_message', {
+  chatId: 'chat_uuid',
+  userId: 'cliente_123',
+  text: 'Hola, necesito ayuda',
+  isAdmin: false
+});
+
+=================================== DESDE ADMIN ==========================================
+
+// 1. Admin se une al chat
+socket.emit('join_chat', { 
+  chatId: 'chat_uuid', 
+  userId: 'admin_1' 
+});
+
+// 2. Admin responde
+socket.emit('send_message', {
+  chatId: 'chat_uuid',
+  userId: 'admin_1',
+  text: '¿En qué puedo ayudarte?',
+  isAdmin: true
+});
