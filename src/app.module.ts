@@ -11,6 +11,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { ChatModule } from './chat/chat.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ChatModule } from './chat/chat.module';
 
     }),
     ChatModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [{
