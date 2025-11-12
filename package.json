@@ -20,16 +20,16 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@nestjs/common": "^10.0.0",
+    "@nestjs/common": "^10.4.20",
     "@nestjs/config": "^2.3.4",
-    "@nestjs/core": "^11.1.7",
-    "@nestjs/jwt": "^11.0.1",
-    "@nestjs/mapped-types": "*",
-    "@nestjs/platform-express": "^11.1.7",
-    "@nestjs/platform-socket.io": "^11.1.7",
-    "@nestjs/swagger": "^11.2.1",
-    "@nestjs/throttler": "^6.4.0",
-    "@nestjs/websockets": "^11.1.7",
+    "@nestjs/core": "^10.4.20",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/mapped-types": "^2.0.4",
+    "@nestjs/platform-express": "^10.4.20",
+    "@nestjs/platform-socket.io": "^10.4.20",
+    "@nestjs/swagger": "^7.4.2",
+    "@nestjs/throttler": "^6.0.0",
+    "@nestjs/websockets": "^10.4.20",
     "@prisma/client": "^6.0.1",
     "@scalar/nestjs-api-reference": "^1.0.1",
     "@types/handlebars": "^4.0.40",
@@ -46,13 +46,13 @@
     "passport-jwt": "^4.0.1",
     "pdfkit": "^0.17.2",
     "prisma": "^6.0.1",
-    "reflect-metadata": "^0.2.0",
+    "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.10",
-    "@nestjs/schematics": "^10.0.0",
-    "@nestjs/testing": "^11.1.7",
+    "@nestjs/cli": "^10.4.5",
+    "@nestjs/schematics": "^10.1.2",
+    "@nestjs/testing": "^10.4.20",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.3",
@@ -77,19 +77,13 @@
     "typescript": "^5.1.3"
   },
   "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
+    "moduleFileExtensions": ["js", "json", "ts"],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
+    "collectCoverageFrom": ["**/*.(t|j)s"],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
