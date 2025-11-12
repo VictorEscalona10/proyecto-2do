@@ -48,10 +48,13 @@ export class UsersService {
                 throw new NotFoundException('No se encontraron usuarios con los criterios especificados');
             }
 
-            await this.prisma.user.delete({
+            await this.prisma.user.update({
                 where: {
                     email
                 },
+                data: {
+                    isActive: false
+                }
             });
 
             return {
