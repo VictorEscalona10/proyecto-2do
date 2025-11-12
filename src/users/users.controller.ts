@@ -1,4 +1,4 @@
-import { Controller, Query, Get, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Query, Get, Delete, HttpCode, HttpStatus, Patch, Body } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersSearchDto } from './dto/usersSearch.dto';
 import { UseGuards } from '@nestjs/common';
@@ -35,5 +35,4 @@ export class UsersController {
   async deleteUser(@Query('email') email: string) {
     return this.usersService.delete(email);
   }
-
 }
