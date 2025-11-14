@@ -32,6 +32,8 @@ model Product {
   description String?
   price       Decimal
   imageUrl    String?
+  path        String?
+  createdAt   DateTime @default(now())
   categoryId  Int
   category    Category @relation(fields: [categoryId], references: [id], onDelete: NoAction)
   orderDetails OrderDetail[]

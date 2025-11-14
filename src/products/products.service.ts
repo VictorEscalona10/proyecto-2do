@@ -9,7 +9,7 @@ import { Prisma, Product } from '@prisma/client';
 export class ProductsService {
   constructor(private prisma: PrismaService) { }
 
-  async create(data: CreateProductDto & { imageUrl?: string }) {
+  async create(data: CreateProductDto, publicUrl?: string, path?: string) {
     const { categoryName } = data;
 
     try {
@@ -26,7 +26,8 @@ export class ProductsService {
           name: data.name.toLocaleLowerCase(),
           description: data.description,
           price: new Prisma.Decimal(data.price),
-          imageUrl: data.imageUrl,
+          imageUrl: publicUrl,
+          path: path,
           categoryId: findCategory.id,
         },
       });

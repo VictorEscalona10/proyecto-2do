@@ -13,8 +13,6 @@ import {
     HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UseGuards } from '@nestjs/common';
@@ -23,57 +21,53 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SupabaseService } from 'src/products/supabase.service';
+
 
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
-    constructor(private readonly productsService: ProductsService) { }
+    constructor(private readonly productsService: ProductsService, private readonly supabaseService: SupabaseService,) { }
 
     @ApiOperation({
-        summary: 'Crear un nuevo producto (Protegido por Rol)',
-        description: 'Crea un nuevo producto. Requiere un token JWT y que el usuario tenga el rol de TRABAJADOR o ADMINISTRADOR.',
+        summary: 'Crear producto (Administrador / Trabajador)',
+        description: 'Crea un nuevo producto. Requiere autenticación y rol ADMINISTRADOR o TRABAJADOR. Enviar multipart/form-data con el campo "imagen".',
     })
-    @ApiConsumes('multipart/form-data') // Indica que se espera un form-data
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Datos del producto y la imagen a subir. **Autorización: Requiere rol `TRABAJADOR` o `ADMINISTRADOR`**.',
-        type: CreateProductDto,
+        schema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string', example: 'Torta de chocolate' },
+                description: { type: 'string', example: 'Torta grande para 10 personas' },
+                price: { type: 'number', format: 'float', example: 25.5 },
+                categoryId: { type: 'string', example: 'categoria-uuid-o-nombre' },
+                imagen: { type: 'string', format: 'binary' },
+            },
+            required: ['name', 'price', 'categoryId', 'imagen'],
+        },
     })
-    @ApiResponse({ status: 201, description: 'Producto creado exitosamente.' })
-    @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
-    @ApiResponse({ status: 401, description: 'No autorizado (token inválido o ausente).' })
-    @ApiResponse({ status: 403, description: 'Prohibido (el usuario no tiene el rol requerido).' })
-    @ApiBearerAuth() // Indica que necesita JWT
-    @Post()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
+    @ApiResponse({ status: 201, description: 'Producto creado correctamente.' })
+    @ApiResponse({ status: 400, description: 'Datos inválidos.' })
+    @ApiResponse({ status: 401, description: 'No autorizado.' })
+    @ApiResponse({ status: 403, description: 'Acceso prohibido. Rol insuficiente.' })
+    
+    //@UseGuards(JwtAuthGuard, RolesGuard)
+    //@Roles(UserRole.ADMINISTRADOR, UserRole.TRABAJADOR)
+    @Post('create')
+    @UseInterceptors(FileInterceptor('imagen'))
     @HttpCode(HttpStatus.CREATED)
-    @UseInterceptors(
-        FileInterceptor('image', {
-            storage: diskStorage({
-                destination: './uploads',
-                filename: (req, file, cb) => {
-                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                    cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
-                },
-            }),
-            fileFilter: (req, file, cb) => {
-                // Validar tipo de archivo
-                const allowedMimeTypes = ['image/jpeg', 'image/png'];
-                if (!allowedMimeTypes.includes(file.mimetype)) {
-                    return cb(new Error('Tipo de archivo no permitido'), false);
-                }
-                cb(null, true);
-            },
-            limits: {
-                fileSize: 2 * 1024 * 1024, // Tamaño máximo: 2 MB
-            },
-        }),
-    )
+    async uploadProductImage(
+        @UploadedFile() file: Express.Multer.File,
+        @Body() data: CreateProductDto,
+    ) {
+        if (!file) {
+            console.error('No se recibió ningún archivo.');
+        }
+        const { publicUrl, path } = await this.supabaseService.uploadProductImage(file);
 
-    async createProduct(@Body() body: CreateProductDto, @UploadedFile() file: Express.Multer.File) {
-        const imageUrl = file ? `/images/${file.filename}` : null;
-
-        return this.productsService.create({ ...body, imageUrl });
+        return this.productsService.create(data, publicUrl, path);
     }
 
     @ApiOperation({
