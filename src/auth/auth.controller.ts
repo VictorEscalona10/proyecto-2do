@@ -12,29 +12,29 @@ import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagg
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
-  @ApiOperation({ summary: 'Iniciar sesion (Publico)' , description: "Autentica a un usuario y devuelve un token JWT"})
+  @ApiOperation({ summary: 'Iniciar sesion (Publico)', description: "Autentica a un usuario y devuelve un token JWT" })
   @ApiResponse({ status: 200, description: 'Inicio de sesión exitoso, devuelve el token de acceso' })
   @ApiResponse({ status: 401, description: 'Contraseña incorrecta' })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async loginUser(@Body() loginDto: LoginDto, @Res() res: Response) {
     const result = await this.authService.login(loginDto, res);
-    return res.json(result); 
+    return res.json(result);
   }
 
-  @ApiOperation({summary: "Registrar un usuario (Publico)", description: "Crea una nueva cuenta de usuario"})
+  @ApiOperation({ summary: "Registrar un usuario (Publico)", description: "Crea una nueva cuenta de usuario" })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente.' })
   @ApiResponse({ status: 400, description: 'Los datos proporcionados son inválidos o el email ya existe.' })
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async registerUser(@Body() registerDto: RegisterDto){
+  async registerUser(@Body() registerDto: RegisterDto) {
     const result = await this.authService.register(registerDto, UserRole.USUARIO);
     return result;
   }
 
-  @ApiOperation({summary: "Registrar un Trabajador (Administrador)", description: "Crea una nueva cuenta de trabajador"})
+  @ApiOperation({ summary: "Registrar un Trabajador (Administrador)", description: "Crea una nueva cuenta de trabajador" })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente.' })
   @ApiResponse({ status: 400, description: 'Los datos proporcionados son inválidos o el email ya existe.' })
   @ApiBearerAuth()
@@ -43,12 +43,12 @@ export class AuthController {
   @Roles(UserRole.ADMINISTRADOR)
   @HttpCode(HttpStatus.CREATED)
 
-  async registerWorker(@Body() registerDto: RegisterDto){
+  async registerWorker(@Body() registerDto: RegisterDto) {
     const result = await this.authService.register(registerDto, UserRole.TRABAJADOR);
     return result;
   }
-  
-  @ApiOperation({summary: "Cerrar sesion (Publico)", description: "Elimina el token de inicio de sesion"})
+
+  @ApiOperation({ summary: "Cerrar sesion (Publico)", description: "Elimina el token de inicio de sesion" })
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logoutUser(@Res() res: Response) {
@@ -57,7 +57,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @ApiOperation({summary: "Obtener usuario actual", description: "Obtiene el usuario autenticado actualmente a partir del token JWT en las cookies."})
+  @ApiOperation({ summary: "Obtener usuario actual", description: "Obtiene el usuario autenticado actualmente a partir del token JWT en las cookies." })
   @ApiResponse({ status: 200, description: 'Usuario autenticado devuelto.' })
   @ApiResponse({ status: 401, description: 'No autenticado o token inválido.' })
   async getCurrentUser(@Req() req: Request, @Res() res: Response) {

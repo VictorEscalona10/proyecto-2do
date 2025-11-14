@@ -47,7 +47,7 @@ async function bootstrap() {
     .build();
 
   // Añadir logging y manejo de errores para detectar problemas
-  let document;
+  let document: any;
   try {
     console.log('Swagger: creando documento...');
     document = SwaggerModule.createDocument(app, config);
