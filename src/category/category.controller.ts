@@ -6,34 +6,42 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('Categories')
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
+  @ApiOperation({ summary: 'Obtener todas las categorías', description: 'Devuelve el listado completo de categorías disponibles.' })
+  @ApiResponse({ status: 200, description: 'Listado de categorías obtenido correctamente.' })
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll() {
+  async findAll() {
     return this.categoryService.findAll();
   }
 
-  @Post()
+  @ApiOperation({ summary: 'Crear una nueva categoría', description: 'Permite crear una categoría. Solo accesible para roles TRABAJADOR y ADMINISTRADOR.' })
+  @ApiResponse({ status: 201, description: 'Categoría creada exitosamente.' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos para la creación de la categoría.' })
+  @Post('create')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
   @HttpCode(HttpStatus.CREATED)
-
   create(@Body() createCategoryDto: CreateCategoryDto) {
     const lower = createCategoryDto.name.toLowerCase();
     createCategoryDto.name = lower;
     return this.categoryService.create(createCategoryDto);
   }
   
-  @Delete(':name')
+  @ApiOperation({ summary: 'Eliminar una categoría', description: 'Elimina una categoría por nombre. Solo accesible para roles TRABAJADOR y ADMINISTRADOR.' })
+  @ApiResponse({ status: 204, description: 'Categoría eliminada correctamente.' })
+  @ApiResponse({ status: 404, description: 'Categoría no encontrada.' })
+  @Delete('/delete/:name')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
+  @Roles(UserRole.ADMINISTRADOR)
   @HttpCode(HttpStatus.NO_CONTENT)
-
-  delete(@Param('name') name: string) {
+  async delete(@Param('name') name: string) {
     return this.categoryService.delete(name);
   }
 }
