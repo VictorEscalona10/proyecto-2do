@@ -53,8 +53,8 @@ export class ProductsController {
     @ApiResponse({ status: 401, description: 'No autorizado.' })
     @ApiResponse({ status: 403, description: 'Acceso prohibido. Rol insuficiente.' })
     
-    //@UseGuards(JwtAuthGuard, RolesGuard)
-    //@Roles(UserRole.ADMINISTRADOR, UserRole.TRABAJADOR)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMINISTRADOR, UserRole.TRABAJADOR)
     @Post('create')
     @UseInterceptors(FileInterceptor('imagen'))
     @HttpCode(HttpStatus.CREATED)

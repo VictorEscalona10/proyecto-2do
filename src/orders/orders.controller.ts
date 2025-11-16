@@ -37,6 +37,14 @@ export class OrderController {
     return this.orderService.findOne(parseInt(id));
   }
 
+  @Get('/user/:email')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+
+  async findByUserEmail(@Param('email') email: string) {
+    return this.orderService.findByUser(email);
+  }
+
   @Patch('/update')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)

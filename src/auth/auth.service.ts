@@ -50,13 +50,13 @@ export class AuthService {
     };
 
     const token = this.jwtService.sign(payload, {
-      expiresIn: '10m',
+      expiresIn: '24h',
     });
 
     res.cookie('jwt', token, {
       httpOnly: true,
       sameSite: 'strict',
-      maxAge: 10 * 60 * 1000,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
     return { message: 'Inicio de sesión exitoso!', token };

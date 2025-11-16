@@ -202,6 +202,47 @@ export class OrderService {
     };
   }
 
+  async findByUser(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!user) {
+      throw new NotFoundException(`Usuario con email ${email} no encontrado`);
+    }
+    const orders = await this.prisma.order.findMany({
+      where: { userId: user.id },
+      include: {
+        orderDetails: {
+          include: {
+            product: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        orderDate: 'desc',
+      },
+    });
+    return orders.map(order => ({
+      ...order,
+      total: Number(order.total),
+      orderDetails: order.orderDetails.map(detail => ({
+        ...detail,
+        unitPrice: Number(detail.unitPrice),
+        product: {
+          ...detail.product,
+          price: Number(detail.product.price)
+        }
+      }))
+    }));
+  }
+
   async updateStatus(data: UpdateStatusOrderDto) {
     const { id, status } = data;
 
