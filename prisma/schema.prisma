@@ -35,6 +35,7 @@ model Product {
   path        String?
   createdAt   DateTime @default(now())
   categoryId  Int
+  isActive Boolean @default(true)
   category    Category @relation(fields: [categoryId], references: [id], onDelete: NoAction)
   orderDetails OrderDetail[]
   reviews     Review[]
@@ -43,6 +44,7 @@ model Product {
 model Category {
   id       Int       @id @default(autoincrement())
   name     String    @unique
+  isActive Boolean @default(true)
   products Product[]
 }
 
@@ -84,6 +86,7 @@ model Review {
   productId Int
   rating    Int?
   comment   String?
+  isActive Boolean @default(true)
   date      DateTime @default(now())
 }
 
