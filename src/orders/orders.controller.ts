@@ -14,7 +14,6 @@ export class OrderController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
-  
   async create(@Body() createOrderDto: CreateOrderDto) {
     return this.orderService.create(createOrderDto);
   }
@@ -23,7 +22,6 @@ export class OrderController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
-
   async findAll() {
     return this.orderService.findAll();
   }
@@ -32,23 +30,29 @@ export class OrderController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
-
   async findOne(@Param('id') id: string) {
     return this.orderService.findOne(parseInt(id));
   }
 
   @Get('/user/:email')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
   async findByUserEmail(@Param('email') email: string) {
-    return this.orderService.findByUser(email);
+    return this.orderService.findByUserEmail(email);
+  }
+
+  @Get('/identification/:identification')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
+  async findByIdentification(@Param('identification') identification: string) {
+    return this.orderService.findByIdentification(identification);
   }
 
   @Patch('/update')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
-
   async updateStatus(@Body() data: UpdateStatusOrderDto) {
     return this.orderService.updateStatus(data);
   }
