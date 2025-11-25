@@ -12,6 +12,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { ChatModule } from './chat/chat.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { DbLogModule } from './db-log/db-log.module';
 
 @Module({
   imports: [
@@ -30,11 +31,12 @@ import { ReviewsModule } from './reviews/reviews.module';
     }),
     ChatModule,
     ReviewsModule,
+    DbLogModule,
   ],
   controllers: [AppController],
   providers: [{
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    }],
+    provide: APP_GUARD,
+    useClass: ThrottlerGuard,
+  }],
 })
 export class AppModule { }
