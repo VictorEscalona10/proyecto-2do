@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { UsersPdfService } from './users-pdf.service';
 import { UsersController } from './users.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthModule } from 'src/auth/auth.module';
@@ -9,6 +10,6 @@ import { RolesGuard } from 'src/auth/roles.guard';
 @Module({
   imports: [PrismaModule, AuthModule],
   controllers: [UsersController],
-  providers: [UsersService, JwtAuthGuard, RolesGuard],
+  providers: [UsersService, UsersPdfService, JwtAuthGuard, RolesGuard],
 })
-export class UsersModule {}
+export class UsersModule { }

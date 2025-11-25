@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probador de PDFs - Migdalis Tortas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .section-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .info-box h4 {
+            color: #1976d2;
+            margin-bottom: 5px;
+        }
+
+        .info-box p {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            border-top: 1px solid #eee;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .button-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍰 Migdalis Tortas</h1>
+            <p>Probador de Exportación de PDFs</p>
+        </div>
+
+        <div class="content">
+            <!-- Información -->
+            <div class="info-box">
+                <h4>ℹ️ Información Importante</h4>
+                <p>Asegúrate de que el servidor backend esté corriendo en <strong>http://localhost:3000</strong></p>
+                <p>Los PDFs se descargarán automáticamente al hacer clic en los botones.</p>
+            </div>
+
+            <!-- Sección 1: Logs de Base de Datos -->
+            <div class="section">
+                <h2 class="section-title">📊 Bitácora de Base de Datos <span class="status status-active">✓ Listo</span></h2>
+                <p class="section-description">
+                    Exporta reportes completos de las operaciones registradas en la base de datos.
+                </p>
+
+                <div class="button-grid">
+                    <a href="http://localhost:3000/db-logs/export/pdf" class="btn" download>
+                        📄 Descargar Todos los Logs
+                    </a>
+                    <a href="http://localhost:3000/db-logs/export/pdf/stats" class="btn btn-secondary" download>
+                        📈 Descargar Estadísticas
+                    </a>
+                </div>
+
+                <!-- Filtros -->
+                <div class="filter-section">
+                    <h3 style="margin-bottom: 15px;">Filtrar Logs</h3>
+                    
+                    <div class="filter-group">
+                        <label for="tableName">Tabla:</label>
+                        <select id="tableName">
+                            <option value="">Todas las tablas</option>
+                            <option value="Product">Product</option>
+                            <option value="Order">Order</option>
+                            <option value="User">User</option>
+                            <option value="Category">Category</option>
+                            <option value="Review">Review</option>
+                            <option value="Payment">Payment</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="action">Acción:</label>
+                        <select id="action">
+                            <option value="">Todas las acciones</option>
+                            <option value="CREATE">CREATE</option>
+                            <option value="UPDATE">UPDATE</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-success" onclick="downloadFilteredLogs()" style="width: 100%; margin-top: 10px;">
+                        🔍 Descargar con Filtros
+                    </button>
+                </div>
+
+                <!-- Logs por tabla específica -->
+                <div>
+                    <h3 style="margin-bottom: 15px;">Logs por Tabla Específica</h3>
+                    <div class="button-grid">
+                        <a href="http://localhost:3000/db-logs/export/pdf/table/Product" class="btn" download>
+                            🛍️ Logs de Productos
+                        </a>
+                        <a href="http://localhost:3000/db-logs/export/pdf/table/Order" class="btn" download>
+                            📦 Logs de Órdenes
+                        </a>
+                        <a href="http://localhost:3000/db-logs/export/pdf/table/User" class="btn" download>
+                            👥 Logs de Usuarios
+                        </a>
+                        <a href="http://localhost:3000/db-logs/export/pdf/table/Category" class="btn" download>
+                            🏷️ Logs de Categorías
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 2: Usuarios -->
+            <div class="section">
+                <h2 class="section-title">👥 Reportes de Usuarios <span class="status status-active">✓ Listo</span></h2>
+                <p class="section-description">
+                    Exporta reportes completos de los usuarios registrados en el sistema.
+                </p>
+
+                <div class="button-grid">
+                    <a href="http://localhost:3000/users/export/pdf" class="btn" download>
+                        📄 Descargar Todos los Usuarios
+                    </a>
+                    <a href="http://localhost:3000/users/export/pdf/stats" class="btn btn-secondary" download>
+                        📈 Descargar Estadísticas
+                    </a>
+                </div>
+
+                <!-- Usuarios por rol específico -->
+                <div style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px;">Usuarios por Rol Específico</h3>
+                    <div class="button-grid">
+                        <a href="http://localhost:3000/users/export/pdf/role/ADMINISTRADOR" class="btn" download>
+                            👨‍💼 Administradores
+                        </a>
+                        <a href="http://localhost:3000/users/export/pdf/role/USUARIO" class="btn" download>
+                            👤 Usuarios/Clientes
+                        </a>
+                        <a href="http://localhost:3000/users/export/pdf/role/TRABAJADOR" class="btn" download>
+                            👷 Trabajadores
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Filtros por estado -->
+                <div class="filter-section" style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px;">Filtrar Usuarios</h3>
+                    
+                    <div class="filter-group">
+                        <label for="userRole">Rol:</label>
+                        <select id="userRole">
+                            <option value="">Todos los roles</option>
+                            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                            <option value="USUARIO">USUARIO</option>
+                            <option value="TRABAJADOR">TRABAJADOR</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="userStatus">Estado:</label>
+                        <select id="userStatus">
+                            <option value="">Todos</option>
+                            <option value="true">Activos</option>
+                            <option value="false">Inactivos</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-success" onclick="downloadFilteredUsers()" style="width: 100%; margin-top: 10px;">
+                        🔍 Descargar con Filtros
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sección 3: Ver Logs en JSON -->
+            <div class="section">
+                <h2 class="section-title">🔍 Consultar Datos en JSON</h2>
+                <p class="section-description">
+                    Ver los datos en formato JSON antes de exportar a PDF.
+                </p>
+                <div class="button-grid">
+                    <a href="http://localhost:3000/db-logs" target="_blank" class="btn btn-success">
+                        📋 Ver Logs (JSON)
+                    </a>
+                    <a href="http://localhost:3000/db-logs/stats" target="_blank" class="btn btn-success">
+                        📊 Ver Estadísticas (JSON)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Migdalis Tortas © 2025 | Sistema de Gestión</p>
+            <p style="font-size: 0.9rem; margin-top: 5px;">Desarrollado con ❤️ para pruebas de PDF</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFilteredLogs() {
+            const tableName = document.getElementById('tableName').value;
+            const action = document.getElementById('action').value;
+
+            // Construir URL con parámetros
+            let url = 'http://localhost:3000/db-logs/export/pdf?';
+            const params = [];
+
+            if (tableName) params.push(`tableName=${tableName}`);
+            if (action) params.push(`action=${action}`);
+
+            url += params.join('&');
+
+            // Descargar
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `logs-filtrado-${Date.now()}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Feedback visual
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ Descargando...';
+            btn.style.background = 'linear-gradient(135deg, #06d77b 0%, #00a86b 100%)';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '';
+            }, 2000);
+        }
+
+        function downloadFilteredUsers() {
+            const role = document.getElementById('userRole').value;
+            const isActive = document.getElementById('userStatus').value;
+
+            // Construir URL con parámetros
+            let url = 'http://localhost:3000/users/export/pdf?';
+            const params = [];
+
+            if (role) params.push(`role=${role}`);
+            if (isActive) params.push(`isActive=${isActive}`);
+
+            url += params.join('&');
+
+            // Descargar
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `usuarios-filtrado-${Date.now()}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Feedback visual
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ Descargando...';
+            btn.style.background = 'linear-gradient(135deg, #06d77b 0%, #00a86b 100%)';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '';
+            }, 2000);
+        }
+
+        // Agregar efecto de descarga a todos los enlaces
+        document.querySelectorAll('a.btn').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const btn = this;
+                const originalBg = btn.style.background;
+                btn.style.background = 'linear-gradient(135deg, #06d77b 0%, #00a86b 100%)';
+                
+                setTimeout(() => {
+                    btn.style.background = originalBg;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
