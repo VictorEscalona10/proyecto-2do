@@ -16,7 +16,7 @@ export class CategoryController {
   @ApiOperation({ summary: 'Obtener todas las categorías', description: 'Devuelve el listado completo de categorías disponibles.' })
   @ApiResponse({ status: 200, description: 'Listado de categorías obtenido correctamente.' })
   @Get()
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.OK) 
   async findAll() {
     return this.categoryService.findAll();
   }

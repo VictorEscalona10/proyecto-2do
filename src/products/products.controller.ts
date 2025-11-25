@@ -30,6 +30,17 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService, private readonly supabaseService: SupabaseService,) { }
 
     @ApiOperation({
+        summary: 'Obtener todos los productos (Público)',
+        description: 'Endpoint público para obtener todos los productos disponibles.',
+    })
+    @ApiResponse({ status: 200, description: 'Lista de todos los productos.' })
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    async getAllProducts() {
+        return this.productsService.findAll();
+    }
+
+    @ApiOperation({
         summary: 'Crear producto (Administrador / Trabajador)',
         description: 'Crea un nuevo producto. Requiere autenticación y rol ADMINISTRADOR o TRABAJADOR. Enviar multipart/form-data con el campo "imagen".',
     })
