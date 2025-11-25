@@ -85,6 +85,7 @@ export class OrderService {
               id: true,
               name: true,
               email: true,
+              Identification: true,
             },
           },
         },
@@ -145,6 +146,7 @@ export class OrderService {
             id: true,
             name: true,
             email: true,
+            Identification: true,
           },
         },
       },
@@ -181,6 +183,7 @@ export class OrderService {
             id: true,
             name: true,
             email: true,
+            Identification: true,
           },
         },
       },
@@ -202,13 +205,21 @@ export class OrderService {
     };
   }
 
-  async findByUser(email: string) {
+  async findByUserEmail(email: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        Identification: true,
+      },
     });
+    
     if (!user) {
       throw new NotFoundException(`Usuario con email ${email} no encontrado`);
     }
+    
     const orders = await this.prisma.order.findMany({
       where: { userId: user.id },
       include: {
@@ -222,6 +233,7 @@ export class OrderService {
             id: true,
             name: true,
             email: true,
+            Identification: true,
           },
         },
       },
@@ -229,6 +241,58 @@ export class OrderService {
         orderDate: 'desc',
       },
     });
+    
+    return orders.map(order => ({
+      ...order,
+      total: Number(order.total),
+      orderDetails: order.orderDetails.map(detail => ({
+        ...detail,
+        unitPrice: Number(detail.unitPrice),
+        product: {
+          ...detail.product,
+          price: Number(detail.product.price)
+        }
+      }))
+    }));
+  }
+
+  async findByIdentification(identification: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { Identification: parseInt(identification) },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        Identification: true,
+      },
+    });
+    
+    if (!user) {
+      throw new NotFoundException(`Usuario con cédula ${identification} no encontrado`);
+    }
+    
+    const orders = await this.prisma.order.findMany({
+      where: { userId: user.id },
+      include: {
+        orderDetails: {
+          include: {
+            product: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            Identification: true,
+          },
+        },
+      },
+      orderBy: {
+        orderDate: 'desc',
+      },
+    });
+    
     return orders.map(order => ({
       ...order,
       total: Number(order.total),
@@ -258,5 +322,4 @@ export class OrderService {
       throw new InternalServerErrorException('Error actualizando la orden');
     }
   }
-
 }

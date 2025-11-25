@@ -87,5 +87,21 @@ export class ProductsService {
         if (error instanceof HttpException) throw error;
         throw new InternalServerErrorException('Error al buscar productos por categoría');
     }
-}
+  }
+
+  async findAll() {
+    try {
+      const products = await this.prisma.product.findMany({
+        include: { category: true },
+        orderBy: { name: 'asc' }
+      });
+
+      return {
+        message: 'Productos obtenidos correctamente',
+        data: products,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Error al obtener los productos');
+    }
+  }
 }
