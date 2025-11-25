@@ -10,6 +10,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model DbLog {
+  id          Int      @id @default(autoincrement())
+  action      String   // INSERT, UPDATE, DELETE
+  tableName   String
+  recordId    Int?
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
