@@ -83,7 +83,7 @@ model Payment {
   id          Int      @id @default(autoincrement())
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId     Int
-  method      String
+  method      PaymentMethod
   paymentDate DateTime @default(now())
   status      Status   @default(PENDING)
 }
@@ -140,6 +140,12 @@ enum UserRole {
   ADMINISTRADOR
   TRABAJADOR
   USUARIO
+}
+
+enum PaymentMethod{
+  EFECTIVO
+  PAGOMOVIL
+  TRANSFERENCIA
 }
 
 enum Status {
