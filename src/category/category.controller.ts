@@ -44,4 +44,10 @@ export class CategoryController {
   async delete(@Param('name') name: string) {
     return this.categoryService.delete(name);
   }
+
+  @Get(':id')
+  async findUnique(@Param('id') id: string) { // este endpoint se usa asi: 
+    const categoryId = parseInt(id, 10);
+    return this.categoryService.findUnique(categoryId);
+  }
 }

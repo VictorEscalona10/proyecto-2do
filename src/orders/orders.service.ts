@@ -65,6 +65,8 @@ export class OrderService {
               productId: item.id,
               quantity: item.count,
               unitPrice: item.price,
+              // AGREGAR ESTA LÍNEA:
+              customizations: item.customizations || null
             })),
           },
         },
@@ -215,11 +217,11 @@ export class OrderService {
         Identification: true,
       },
     });
-    
+
     if (!user) {
       throw new NotFoundException(`Usuario con email ${email} no encontrado`);
     }
-    
+
     const orders = await this.prisma.order.findMany({
       where: { userId: user.id },
       include: {
@@ -241,7 +243,7 @@ export class OrderService {
         orderDate: 'desc',
       },
     });
-    
+
     return orders.map(order => ({
       ...order,
       total: Number(order.total),
@@ -266,11 +268,11 @@ export class OrderService {
         Identification: true,
       },
     });
-    
+
     if (!user) {
       throw new NotFoundException(`Usuario con cédula ${identification} no encontrado`);
     }
-    
+
     const orders = await this.prisma.order.findMany({
       where: { userId: user.id },
       include: {
@@ -292,7 +294,7 @@ export class OrderService {
         orderDate: 'desc',
       },
     });
-    
+
     return orders.map(order => ({
       ...order,
       total: Number(order.total),

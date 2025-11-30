@@ -1,14 +1,28 @@
-import { IsArray, ValidateNested, IsNumber, IsPositive } from 'class-validator';
+import { IsInt, IsNumber, IsArray, ValidateNested, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateOrderItemDto } from './createOrderItem.dto';
+
+// Esta es la clase de los items individuales
+class OrderItemDto {
+  @IsInt()
+  id: number;
+
+  @IsInt()
+  count: number;
+
+  @IsNumber()
+  price: number;
+
+  // AGREGA ESTO PARA QUE SE QUITE EL ERROR ROJO
+  @IsOptional() 
+  customizations?: any; 
+}
 
 export class CreateOrderDto {
-  @IsNumber()
-  @IsPositive()
+  @IsInt()
   userId: number;
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateOrderItemDto)
-  items: CreateOrderItemDto[];
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
 }

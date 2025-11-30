@@ -55,15 +55,28 @@ export class PdfService {
       doc.fontSize(14).fillColor('#2c3e50').text('Productos', { underline: true });
       doc.moveDown(0.5);
 
-      order.orderDetails.forEach((detail, index) => {
+      order.orderDetails.forEach((detail: any, index) => { // Ponemos 'any' temporalmente o actualiza la interfaz OrderDetail
         const subtotalDollars = detail.unitPrice * detail.quantity;
         const subtotalBolivares = subtotalDollars * order.dolarValue;
 
+        // 1. Imprimir Nombre del Producto Base
         doc.fontSize(12).fillColor('#34495e').text(`${index + 1}. ${detail.product.name}`);
-        doc.fillColor('black');
+        
+        // 2. NUEVO: Imprimir Personalizaciones (Toppings, Rellenos) si existen
+        if (detail.customizations && Array.isArray(detail.customizations)) {
+            detail.customizations.forEach((custom: any) => {
+                doc.fontSize(10)
+                   .fillColor('#7f8c8d') // Un gris más claro
+                   .text(`    + ${custom.name} ($${Number(custom.price).toFixed(2)})`);
+            });
+            // Volvemos al color normal para los precios
+            doc.fillColor('black'); 
+        }
+
+        doc.fontSize(12).fillColor('black');
         doc.text(`   Cantidad: ${detail.quantity}`);
         doc.text(
-          `   Precio unitario: $${detail.unitPrice.toFixed(2)}  |  Bs${(
+          `   Precio Final (Base+Extras): $${detail.unitPrice.toFixed(2)}  |  Bs${(
             detail.unitPrice * order.dolarValue
           ).toFixed(2)}`
         );

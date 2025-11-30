@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diseña tu Torta - Pastelería</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #fff0f5; padding: 20px; color: #4a4a4a; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(219, 39, 119, 0.15); }
+        
+        h1 { color: #be185d; text-align: center; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #db2777; margin-bottom: 30px; font-size: 0.9em; }
+
+        .group-section { margin-bottom: 30px; background: #fff; border: 1px solid #fce7f3; border-radius: 12px; padding: 20px; }
+        .group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .group-title { font-weight: 600; color: #831843; font-size: 1.1em; margin: 0; }
+        
+        .badge-required { background: #be185d; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7em; text-transform: uppercase; }
+        .badge-optional { background: #e5e7eb; color: #6b7280; padding: 2px 8px; border-radius: 10px; font-size: 0.7em; text-transform: uppercase; }
+
+        .options-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+        
+        .option-card { 
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px; border: 2px solid #fce7f3; border-radius: 10px; 
+            cursor: pointer; transition: all 0.2s;
+        }
+        .option-card:hover { border-color: #f472b6; background: #fff1f2; }
+        /* Estilo cuando el input dentro está checked (truco visual) */
+        .option-card:has(input:checked) { border-color: #db2777; background: #fdf2f8; font-weight: bold; }
+
+        .price-tag { color: #db2777; font-weight: 600; font-size: 0.9em; }
+        
+        .sticky-footer {
+            position: sticky; bottom: 20px; background: white; padding: 15px;
+            border-top: 2px solid #fce7f3; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.05); border-radius: 15px; margin-top: 20px;
+        }
+        .total-display { font-size: 1.4em; font-weight: bold; color: #831843; }
+        
+        button { 
+            padding: 12px 30px; background: #be185d; color: white; border: none; 
+            border-radius: 50px; font-size: 1.1rem; font-weight: 600; cursor: pointer; 
+            box-shadow: 0 4px 10px rgba(190, 24, 93, 0.3); transition: transform 0.1s;
+        }
+        button:hover { background: #9d174d; transform: scale(1.02); }
+
+        /* Esconder el radio/checkbox nativo feo */
+        input[type="radio"], input[type="checkbox"] { accent-color: #be185d; transform: scale(1.2); margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 id="product-title">Cargando...</h1>
+    <p class="subtitle">Personaliza cada detalle a tu gusto</p>
+    
+    <div id="customization-container"></div>
+
+    <div class="sticky-footer">
+        <div>
+            <div style="font-size: 0.8em; color: #666;">Total Estimado:</div>
+            <div class="total-display">$<span id="total-price">0.00</span></div>
+        </div>
+        <button onclick="enviarOrden()">Agregar al Pedido 🎂</button>
+    </div>
+</div>
+
+<script>
+    // --- CONFIGURACIÓN ---
+    const CATEGORY_ID = 19; // Tu categoría de "Tortas Personalizadas"
+    const PRODUCT_ID_BASE = 1; // Usamos un producto base temporal
+    const USER_ID = 1; // Simulado
+    const API_URL = 'http://localhost:3000'; 
+
+    let basePrice = 20.00; // Precio base de la torta "desnuda" de 1 piso
+    let currentTotal = 0;
+
+    async function init() {
+        try {
+            const response = await fetch(`${API_URL}/category/${CATEGORY_ID}`);
+            if (!response.ok) throw new Error("Error API");
+            const category = await response.json();
+            
+            // Si tuvieras un precio base en la categoría o producto, úsalo aquí
+            // basePrice = Number(category.products[0]?.price || 20); 
+
+            renderUI(category);
+            updateTotal();
+        } catch (error) {
+            console.error(error);
+            document.getElementById('product-title').innerText = "Error cargando la pastelería";
+        }
+    }
+
+    function renderUI(category) {
+        document.getElementById('product-title').innerText = category.name;
+        const container = document.getElementById('customization-container');
+        container.innerHTML = '';
+
+        if(!category.customizationGroups || category.customizationGroups.length === 0) {
+            container.innerHTML = '<p style="text-align:center">No hay opciones disponibles. (Agrega datos en la DB)</p>';
+            return;
+        }
+
+        category.customizationGroups.forEach(group => {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'group-section';
+            
+            // Header del grupo con badge de Obligatorio/Opcional
+            const header = document.createElement('div');
+            header.className = 'group-header';
+            
+            const title = document.createElement('h3');
+            title.className = 'group-title';
+            title.innerText = group.name;
+            
+            const badge = document.createElement('span');
+            if (group.minSelection > 0) {
+                badge.className = 'badge-required';
+                badge.innerText = 'Obligatorio';
+            } else {
+                badge.className = 'badge-optional';
+                badge.innerText = 'Opcional';
+            }
+
+            header.appendChild(title);
+            header.appendChild(badge);
+            groupDiv.appendChild(header);
+
+            // Grid de opciones
+            const grid = document.createElement('div');
+            grid.className = 'options-grid';
+
+            group.options.forEach(option => {
+                if (!option.isAvailable) return;
+
+                const inputType = group.maxSelection > 1 ? 'checkbox' : 'radio';
+                const inputName = `group_${group.id}`; 
+                const price = Number(option.priceExtra);
+
+                const label = document.createElement('label');
+                label.className = 'option-card';
+                label.innerHTML = `
+                    <div style="display:flex; align-items:center">
+                        <input type="${inputType}" 
+                               name="${inputName}" 
+                               value="${option.id}"
+                               data-price="${price}"
+                               data-name="${option.name}"
+                               onchange="updateTotal()"> 
+                        ${option.name}
+                    </div>
+                    <div class="price-tag">${price > 0 ? '+ $' + price.toFixed(2) : 'Gratis'}</div>
+                `;
+                grid.appendChild(label);
+            });
+
+            groupDiv.appendChild(grid);
+            container.appendChild(groupDiv);
+        });
+    }
+
+    function updateTotal() {
+        let totalExtras = 0;
+        const inputs = document.querySelectorAll('input:checked');
+        
+        inputs.forEach(input => {
+            totalExtras += parseFloat(input.dataset.price);
+        });
+
+        currentTotal = basePrice + totalExtras;
+        document.getElementById('total-price').innerText = currentTotal.toFixed(2);
+    }
+
+    async function enviarOrden() {
+        // Validar obligatorios (Simple check)
+        // En una app real, verificarías que group.minSelection se cumpla
+        
+        let selectedCustomizations = [];
+        const inputs = document.querySelectorAll('input:checked');
+        inputs.forEach(input => {
+            selectedCustomizations.push({
+                name: input.dataset.name,
+                price: parseFloat(input.dataset.price)
+            });
+        });
+
+        const payload = {
+            userId: USER_ID, 
+            items: [
+                {
+                    id: PRODUCT_ID_BASE,
+                    count: 1,
+                    price: currentTotal,
+                    customizations: selectedCustomizations 
+                }
+            ]
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert(`¡Pedido de Torta listo! ID: ${data.order.id}\nRevisa tu email (PDF) para ver los detalles.`);
+            } else {
+                alert("Error: " + (data.message || "Revisa la consola"));
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error de conexión");
+        }
+    }
+
+    init();
+</script>
+
+</body>
+</html>
