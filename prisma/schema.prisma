@@ -54,8 +54,35 @@ model Product {
 model Category {
   id       Int       @id @default(autoincrement())
   name     String    @unique
-  isActive Boolean @default(true)
+  isActive Boolean   @default(true)
   products Product[]
+
+  // AGREGADO: Una categoría puede tener varios grupos de personalización
+  // Ejemplo: "Tipos de Bizcocho", "Rellenos", "Decoraciones"
+  customizationGroups CustomizationGroup[]
+}
+
+model CustomizationGroup {
+  id          Int     @id @default(autoincrement())
+  name        String  // Ej: "Elige tu Bizcocho", "Agrega Toppings"
+  description String?
+  minSelection Int    @default(0) // 1 significa obligatorio
+  maxSelection Int    @default(1) // 1 para radio button, >1 para checkboxes
+
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+
+  options     CustomizationOption[]
+}
+
+model CustomizationOption {
+  id          Int     @id @default(autoincrement())
+  name        String  // Ej: "Vainilla", "Chocolate", "Fresas Extras"
+  priceExtra  Decimal @default(0.00) // Aquí respondes tu duda: el precio extra
+  isAvailable Boolean @default(true)
+
+  group       CustomizationGroup @relation(fields: [groupId], references: [id])
+  groupId     Int
 }
 
 model Order {
@@ -73,10 +100,19 @@ model OrderDetail {
   id        Int     @id @default(autoincrement())
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId   Int
+  
+  // OJO AQUÍ: El producto puede ser null si es un pedido 100% personalizado 
+  // O puedes crear un producto genérico llamado "Pastel Personalizado" base.
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
+  
   quantity  Int
   unitPrice Decimal
+  
+  // AGREGADO: Aquí guardamos qué eligió el usuario.
+  // Es mejor usar JSON para no crear una tabla gigante de relaciones de ordenes pasadas.
+  // Guardarás algo como: [{ name: "Bizcocho Vainilla", price: 0 }, { name: "Topping Fresas", price: 5 }]
+  customizations Json? 
 }
 
 model Payment {
