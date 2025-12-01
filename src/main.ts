@@ -34,10 +34,10 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.enableCors({
+  /* app.enableCors({
     origin: ['http://localhost:5173', 'http://127.0.0.1:5500', 'https://proyecto-2do-bvu1.vercel.app/'],
     credentials: true,
-  });
+  }); */
 
   // Documentación API con Scalar
   const config = new DocumentBuilder()
