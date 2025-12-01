@@ -34,10 +34,17 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  // Configuración CORS dinámica desde variable de entorno
+  const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+    : ['http://localhost:5173', 'http://127.0.0.1:5500'];
+
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5500'],
+    origin: corsOrigins,
     credentials: true,
   });
+
+  console.log('CORS habilitado para:', corsOrigins);
 
   // Documentación API con Scalar
   const config = new DocumentBuilder()

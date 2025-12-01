@@ -14,12 +14,12 @@ import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception
 @ApiTags('Categories')
 @Controller('category')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @ApiOperation({ summary: 'Obtener todas las categorías', description: 'Devuelve el listado completo de categorías disponibles.' })
   @ApiResponse({ status: 200, description: 'Listado de categorías obtenido correctamente.' })
   @Get()
-  @HttpCode(HttpStatus.OK) 
+  @HttpCode(HttpStatus.OK)
   async findAll() {
     return this.categoryService.findAll();
   }
@@ -36,7 +36,7 @@ export class CategoryController {
     createCategoryDto.name = lower;
     return this.categoryService.create(createCategoryDto);
   }
-  
+
   @ApiOperation({ summary: 'Eliminar una categoría', description: 'Elimina una categoría por nombre. Solo accesible para roles TRABAJADOR y ADMINISTRADOR.' })
   @ApiResponse({ status: 204, description: 'Categoría eliminada correctamente.' })
   @ApiResponse({ status: 404, description: 'Categoría no encontrada.' })

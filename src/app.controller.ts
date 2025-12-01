@@ -12,7 +12,7 @@ export class AppController {
   })
   @ApiResponse({ status: 200, description: 'Acceso concedido. El token es válido.' })
   @ApiResponse({ status: 401, description: 'No autorizado. El token falta o es inválido.' })
-  @ApiBearerAuth() 
+  @ApiBearerAuth()
   @Get('protected')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -30,7 +30,23 @@ export class AppController {
   @ApiResponse({ status: 200, description: 'La API está funcionando correctamente.' })
   @Get()
   @HttpCode(HttpStatus.OK)
-  hello(){
+  hello() {
     return 'API is running...';
+  }
+
+  @ApiOperation({
+    summary: 'Health check para producción',
+    description: 'Verifica el estado de salud de la aplicación con información detallada.',
+  })
+  @ApiResponse({ status: 200, description: 'La aplicación está saludable.' })
+  @Get('health')
+  @HttpCode(HttpStatus.OK)
+  healthCheck() {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      uptime: process.uptime(),
+    };
   }
 }
