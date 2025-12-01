@@ -9,7 +9,7 @@ import { UpdateStatusOrderDto } from './dto/updateStatusOrder.dto';
 
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -37,7 +37,7 @@ export class OrderController {
   @Get('/user/:email')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
+  @Roles(UserRole.USUARIO, UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
   async findByUserEmail(@Param('email') email: string) {
     return this.orderService.findByUserEmail(email);
   }
