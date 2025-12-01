@@ -10,14 +10,22 @@ export class MailService implements OnModuleInit {
 
   onModuleInit() {
     this.transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST,
-      port: parseInt(process.env.MAIL_PORT),
+      host: process.env.MAIL_HOST || 'smtp.gmail.com', // Agregamos fallback por si es undefined
+      port: parseInt(process.env.MAIL_PORT || '587'),  // Agregamos fallback dentro del parseInt
       secure: false,
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD,
       },
-    });
+      family: 4,
+      tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
+    } as any); // <--- ESTO ES LO QUE ARREGLA EL ERROR ROJO
   }
 
   async verifyConnection() {
@@ -33,7 +41,7 @@ export class MailService implements OnModuleInit {
     try {
 
       const templatePath = path.join(process.cwd(), 'src', 'orders', 'templates', 'order-confirmation.hbs');
-      
+
       if (!fs.existsSync(templatePath)) {
         throw new Error(`No se encontró la plantilla en: ${templatePath}`);
       }
@@ -73,13 +81,13 @@ export class MailService implements OnModuleInit {
       return result;
     } catch (error) {
       console.error('Error enviando email:', error);
-      
+
       // Si hay error con la plantilla, enviar email sin HTML
       if (error.code === 'ENOENT') {
         console.log('Enviando email con texto plano...');
         return this.sendPlainTextEmail(email, order, pdfBuffer);
       }
-      
+
       throw error;
     }
   }
@@ -93,9 +101,9 @@ Fecha: ${order.orderDate.toLocaleDateString('es-ES')}
 Cliente: ${order.user.name}
 
 Productos:
-${order.orderDetails.map((detail: any, index: number) => 
-  `${index + 1}. ${detail.product.name} - ${detail.quantity} x $${detail.unitPrice} = $${detail.unitPrice * detail.quantity}`
-).join('\n')}
+${order.orderDetails.map((detail: any, index: number) =>
+      `${index + 1}. ${detail.product.name} - ${detail.quantity} x $${detail.unitPrice} = $${detail.unitPrice * detail.quantity}`
+    ).join('\n')}
 
 Total: $${order.total}
 
