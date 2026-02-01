@@ -30,7 +30,9 @@ export class CategoryService {
 
   async findAll() {
     try {
-      const categories = await this.prisma.category.findMany();
+      const categories = await this.prisma.category.findMany({
+        where: { isActive: true },
+      });
       return categories;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -61,6 +63,8 @@ export class CategoryService {
       const existingCategory = await this.prisma.category.findUnique({
         where: { name },
       });
+
+      console.log("se ejecuto eso")
 
       if (!existingCategory) {
         throw new NotFoundException('Categoria no encontrada');

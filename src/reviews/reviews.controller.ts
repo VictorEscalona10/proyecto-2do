@@ -37,6 +37,7 @@ export class ReviewsController {
   @ApiResponse({ status: 400, description: 'ID de usuario inválido.' })
   @Get('user/:id')
   @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.USUARIO, UserRole.ADMINISTRADOR, UserRole.TRABAJADOR)
   async getAllReviewsByUserId(@Param('id') id: string) {
     const userId = parseInt(id, 10);
     return this.reviewsService.getAllReviewsByUserId(userId);

@@ -34,12 +34,12 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  /* app.enableCors({
+  app.enableCors({
     origin: ['http://localhost:5173', 'http://127.0.0.1:5500', 'https://proyecto-2do-bvu1.vercel.app/'],
     credentials: true,
-  }); */
+  });
 
-  // Documentación API con Scalar
+  // Documentación API
   const config = new DocumentBuilder()
     .setTitle('Documentacion API')
     .setDescription('API para la gestión de la pasteleria Migdalis Tortas')
@@ -88,7 +88,6 @@ async function bootstrap() {
     console.warn('No se montó Scalar: documento Swagger no disponible.');
   }
 
-  // Puerto (fallback a 3000)
   const port = Number(process.env.PORT) || 3000;
   await app.listen(port);
   console.log(`App escuchando en http://localhost:${port}`);

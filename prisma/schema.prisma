@@ -157,6 +157,7 @@ model Chat {
   adminId   String
   status    String   @default("active")
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
   
   messages Message[]
 }
