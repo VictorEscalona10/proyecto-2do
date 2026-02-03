@@ -10,38 +10,33 @@ export class ProductsService {
   constructor(private prisma: PrismaService) { }
 
   async create(data: CreateProductDto, publicUrl?: string, path?: string) {
-    const { categoryName } = data;
+  const { categoryId } = data;
 
-    try {
-      const findCategory = await this.prisma.category.findUnique({
-        where: { name: categoryName },
-      });
+  const findCategory = await this.prisma.category.findUnique({
+    where: { id: categoryId },
+  });
 
-      if (!findCategory) {
-        throw new NotFoundException('Categoría no encontrada');
-      }
-
-      const product = await this.prisma.product.create({
-        data: {
-          name: data.name.toLocaleLowerCase(),
-          description: data.description,
-          price: new Prisma.Decimal(data.price),
-          imageUrl: publicUrl,
-          path: path,
-          categoryId: findCategory.id,
-        },
-      });
-
-      return {
-        message: 'Producto creado correctamente',
-        data: product,
-      };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('Error al crear el producto');
-    }
-
+  if (!findCategory) {
+    throw new NotFoundException('Categoría no encontrada');
   }
+
+  const product = await this.prisma.product.create({
+    data: {
+      name: data.name.toLowerCase(),
+      description: data.description,
+      price: new Prisma.Decimal(data.price),
+      imageUrl: publicUrl,
+      path,
+      categoryId,
+    },
+  });
+
+  return {
+    message: 'Producto creado correctamente',
+    data: product,
+  };
+}
+
 
   async searchByName(name: string) {
     try {

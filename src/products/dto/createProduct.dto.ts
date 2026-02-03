@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsNotEmpty, Min, MaxLength } from 'class-validator';
+import { IsString, IsNumber, IsNotEmpty, Min, MaxLength, IsInt, IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -48,7 +48,8 @@ export class CreateProductDto {
     required: true,
     type: String
   })
-  @IsString({ message: 'El nombre de la categoría debe ser un texto' })
-  @IsNotEmpty({ message: 'El nombre de la categoría es requerido' })
-  categoryName: string;
+  @Type(() => Number)
+@IsInt({ message: 'La categoría debe ser un ID válido' })
+@IsPositive()
+categoryId: number;
 }
