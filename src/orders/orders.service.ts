@@ -1,10 +1,12 @@
-import { Injectable, Logger, NotFoundException, HttpException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, HttpException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
 import { MailService } from '../mail/mail.service';
 import { PdfService } from './pdf.service';
 import { UpdateStatusOrderDto } from './dto/updateStatusOrder.dto';
-import { Status } from '@prisma/client';
+import { Status, PaymentMethod } from '@prisma/client';
+import { PaymentService } from './payment.service';
+import { SupabaseService } from 'src/database-backup/supabase.service';
 
 @Injectable()
 export class OrderService {
@@ -14,6 +16,8 @@ export class OrderService {
     private prisma: PrismaService,
     private mailService: MailService,
     private pdfService: PdfService,
+    private paymentService: PaymentService,
+    private supabase: SupabaseService,
   ) { }
 
   async getDolarBcv() {
@@ -23,7 +27,16 @@ export class OrderService {
   }
 
   async create(createOrderDto: CreateOrderDto) {
-    const { userId, items } = createOrderDto;
+    const { userId, items, paymentMethod = PaymentMethod.EFECTIVO, reference, proofBase64 } = createOrderDto;
+
+    // IMPORTANTE: Solo validar que para métodos no efectivo haya referencia
+    // NO validamos proofBase64 aquí porque se subirá después
+    if (paymentMethod !== PaymentMethod.EFECTIVO) {
+      if (!reference) {
+        throw new BadRequestException('Para pagos electrónicos se requiere referencia');
+      }
+      // NO validamos proofBase64 aquí
+    }
 
     try {
       // 1. Verificar que el usuario existe
@@ -55,17 +68,16 @@ export class OrderService {
       const total = items.reduce((sum, item) => sum + (Number(item.price) * item.count), 0);
       const dolarValue = await this.getDolarBcv(); // Obtener el valor del dólar
 
-      // 4. Crear la orden en la base de datos (guardar en dólares)
+      // 4. Crear la orden en la base de datos
       const order = await this.prisma.order.create({
         data: {
           userId,
-          total: total, // Guardar el total en dólares
+          total: total,
           orderDetails: {
             create: items.map(item => ({
               productId: item.id,
               quantity: item.count,
               unitPrice: item.price,
-              // AGREGAR ESTA LÍNEA:
               customizations: item.customizations || null
             })),
           },
@@ -93,9 +105,19 @@ export class OrderService {
         },
       });
 
+      // 5. Crear el pago (SIN comprobante por ahora)
+      const paymentData = {
+        orderId: order.id,
+        method: paymentMethod,
+        reference: reference || null,
+        proofBase64: null, // IMPORTANTE: null porque se subirá después
+      };
+
+      await this.paymentService.createPayment(paymentData);
+
       this.logger.log(`Orden #${order.id} creada para usuario ${user.email}`);
 
-      // 5. Preparar datos para el PDF (convertir Decimal a number)
+      // 6. Preparar datos para el PDF
       const orderForPdf = {
         ...order,
         total: Number(order.total),
@@ -107,13 +129,13 @@ export class OrderService {
             price: Number(detail.product.price)
           }
         })),
-        dolarValue, // Agregar el valor del dólar al PDF
+        dolarValue,
       };
 
-      // 6. Generar PDF
+      // 7. Generar PDF
       const pdfBuffer = await this.pdfService.generateOrderPdf(orderForPdf);
 
-      // 7. Enviar email con el PDF
+      // 8. Enviar email con el PDF
       await this.mailService.sendOrderConfirmation(user.email, orderForPdf, pdfBuffer);
 
       this.logger.log(`Email de confirmación enviado a ${user.email}`);
@@ -121,7 +143,7 @@ export class OrderService {
       return {
         success: true,
         order: orderForPdf,
-        message: 'Orden creada y email enviado correctamente'
+        message: 'Orden creada exitosamente'
       };
 
     } catch (error) {
@@ -150,6 +172,12 @@ export class OrderService {
             email: true,
             Identification: true,
           },
+        },
+        payments: {
+          orderBy: {
+            paymentDate: 'desc'
+          },
+          take: 1
         },
       },
       orderBy: {
@@ -188,10 +216,26 @@ export class OrderService {
             Identification: true,
           },
         },
+        payments: {
+          orderBy: {
+            paymentDate: 'desc'
+          },
+          take: 1
+        },
       },
     });
 
     if (!order) return null;
+
+    // Obtener URL firmada fresca para el comprobante si existe
+    let paymentProof = null;
+    if (order.payments && order.payments.length > 0 && order.payments[0].fileName) {
+      try {
+        paymentProof = await this.paymentService.getPaymentProof(id);
+      } catch (error) {
+        this.logger.error(`Error obteniendo comprobante para orden ${id}:`, error);
+      }
+    }
 
     return {
       ...order,
@@ -203,7 +247,8 @@ export class OrderService {
           ...detail.product,
           price: Number(detail.product.price)
         }
-      }))
+      })),
+      paymentProof // Añadir el comprobante con URL firmada fresca
     };
   }
 
@@ -237,6 +282,12 @@ export class OrderService {
             email: true,
             Identification: true,
           },
+        },
+        payments: {
+          orderBy: {
+            paymentDate: 'desc'
+          },
+          take: 1
         },
       },
       orderBy: {
@@ -289,6 +340,12 @@ export class OrderService {
             Identification: true,
           },
         },
+        payments: {
+          orderBy: {
+            paymentDate: 'desc'
+          },
+          take: 1
+        },
       },
       orderBy: {
         orderDate: 'desc',
@@ -323,5 +380,18 @@ export class OrderService {
       }
       throw new InternalServerErrorException('Error actualizando la orden');
     }
+  }
+
+  // Métodos para manejar comprobantes
+  async uploadPaymentProof(orderId: number, file: Express.Multer.File) {
+    return this.paymentService.uploadPaymentProof(orderId, file);
+  }
+
+  async getPaymentProof(orderId: number) {
+    return this.paymentService.getPaymentProof(orderId);
+  }
+
+  async getPaymentDetails(orderId: number) {
+    return this.paymentService.getPaymentDetails(orderId);
   }
 }

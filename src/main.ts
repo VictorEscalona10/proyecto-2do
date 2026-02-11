@@ -13,6 +13,10 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Configuración importante: aumentar límite de tamaño
+  app.useBodyParser('json', { limit: '10mb' }); // Para JSON (base64)
+  app.useBodyParser('urlencoded', { limit: '10mb', extended: true });
+
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {

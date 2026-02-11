@@ -21,15 +21,6 @@ export class DatabaseBackupController {
     return this.listBackupsService.list();
   }
 
-  /* @Post()
-  async backup() {
-    const path = await this.backupService.createBackup();
-    return {
-      message: 'Backup generado correctamente',
-      file: path,
-    };
-  } */
-
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMINISTRADOR)
   @Post()
