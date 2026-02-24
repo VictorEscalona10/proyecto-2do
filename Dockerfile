@@ -10,7 +10,7 @@ COPY prisma ./prisma/
 
 # 3. Instalamos TODAS las dependencias. 
 # Usamos --ignore-scripts para evitar que tu "postinstall" salte a destiempo.
-RUN npm ci --ignore-scripts
+RUN npm install --ignore-scripts
 
 # 4. Generamos el cliente de Prisma explícitamente
 RUN npx prisma generate
