@@ -40,11 +40,7 @@ async function bootstrap() {
 
   app.enableCors({
   origin: [
-    'http://localhost:5173',
-    'http://127.0.0.1:5500',
-    'https://proyecto-2do-bvu1.vercel.app',    // sin barra al final
-    'https://front-proyecto-phi.vercel.app',
-    'https://front-proyecto-gu6r.vercel.app'
+    'http://192.168.1.101:5173', 'http://localhost:5173'
   ],
   credentials: true,
 });
