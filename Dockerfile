@@ -1,42 +1,39 @@
 FROM node:22-bookworm-slim AS builder
 WORKDIR /usr/src/app
 
-# 1. Instalamos OpenSSL (Requisito indispensable para que Prisma funcione en Debian)
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+# Instalamos dependencias del sistema y OpenSSL (Requisito estricto de Prisma)
+RUN apt-get update && apt-get install -y openssl python3 make g++ && rm -rf /var/lib/apt/lists/*
 
-# 2. Copiamos archivos de dependencias
-COPY package*.json ./
+# Copiamos TODOS los archivos de configuración primero
+COPY package.json package-lock.json ./
+COPY tsconfig.json tsconfig.build.json ./
 COPY prisma ./prisma/
 
-# 3. Instalación rápida y limpia (Debian descargará los binarios pre-compilados)
-RUN npm install --ignore-scripts
+# Instalación limpia normal (sin omitir nada, sin ignorar scripts)
+# Esto dejará que Prisma genere su cliente automáticamente gracias a tu postinstall
+RUN npm install
 
-# 4. Generamos Prisma
-RUN npx prisma generate
-
-# 5. Compilamos NestJS
+# Copiamos el resto de tu código fuente
 COPY . .
-RUN npm run build
 
-# 6. Limpiamos dependencias de desarrollo
-RUN npm prune --omit=dev
+# Compilamos el proyecto (genera la carpeta /dist)
+RUN npm run build
 
 # ----------------------------------------
 FROM node:22-bookworm-slim AS runner
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
 
-# 7. Instalamos OpenSSL también en la fase de producción
+# Requisito de Prisma en producción
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
-
-# 8. Pasamos los archivos compilados y listos
+# Copiamos los archivos generados desde el builder
+COPY --from=builder /usr/src/app/package.json ./package.json
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/prisma ./prisma
 
 EXPOSE 3000
 
-# Ejecutamos migraciones e iniciamos
+# Tu comando de arranque
 CMD ["npm", "run", "start:migrate:prod"]
