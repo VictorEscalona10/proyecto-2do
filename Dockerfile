@@ -22,7 +22,7 @@ ENV NODE_ENV=production
 
 # Copiamos package.json e instalamos SOLO dependencias de producción
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev --ignore-scripts
 
 # IMPORTANTE: Copiamos el cliente de Prisma ya generado desde el builder
 COPY --from=builder /usr/src/app/node_modules/@prisma/client ./node_modules/@prisma/client
