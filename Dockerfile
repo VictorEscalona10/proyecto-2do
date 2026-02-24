@@ -9,7 +9,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # 3. ¡Volvemos a npm ci! Ahora funcionará porque coincide con tu PC
-RUN npm ci --ignore-scripts
+RUN npm install --ignore-scripts
 
 # 4. Generamos Prisma
 RUN npx prisma generate
