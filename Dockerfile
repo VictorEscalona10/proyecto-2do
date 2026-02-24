@@ -1,14 +1,14 @@
-FROM node:22-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /usr/src/app
 
-# 1. Instalamos herramientas para compilar dependencias nativas
-RUN apk add --no-cache python3 make g++
+# 1. Instalamos OpenSSL (Requisito indispensable para que Prisma funcione en Debian)
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# 2. Copiamos los archivos de dependencias
+# 2. Copiamos archivos de dependencias
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# 3. ¡Volvemos a npm ci! Ahora funcionará porque coincide con tu PC
+# 3. Instalación rápida y limpia (Debian descargará los binarios pre-compilados)
 RUN npm install --ignore-scripts
 
 # 4. Generamos Prisma
@@ -22,17 +22,17 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # ----------------------------------------
-FROM node:22-alpine AS runner
+FROM node:22-bookworm-slim AS runner
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
 
-# Copiamos solo el package.json
+# 7. Instalamos OpenSSL también en la fase de producción
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 COPY package*.json ./
 
-# 7. Pasamos los node_modules ya listos
+# 8. Pasamos los archivos compilados y listos
 COPY --from=builder /usr/src/app/node_modules ./node_modules
-
-# 8. Copiamos los artefactos compilados y Prisma
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/prisma ./prisma
 
