@@ -1,46 +1,42 @@
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /usr/src/app
 
-# 1. Instalamos las herramientas para compilar dependencias nativas (como bcrypt)
+# 1. Instalamos herramientas para compilar dependencias nativas
 RUN apk add --no-cache python3 make g++
 
-# 2. Copiamos solo lo necesario para instalar dependencias
+# 2. Copiamos los archivos de dependencias
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# 3. Instalamos TODAS las dependencias. 
-# Usamos --ignore-scripts para evitar que tu "postinstall" salte a destiempo.
-RUN npm install --ignore-scripts
+# 3. ¡Volvemos a npm ci! Ahora funcionará porque coincide con tu PC
+RUN npm ci --ignore-scripts
 
-# 4. Generamos el cliente de Prisma explícitamente
+# 4. Generamos Prisma
 RUN npx prisma generate
 
-# 5. Copiamos el resto del código y compilamos Nest
+# 5. Compilamos NestJS
 COPY . .
 RUN npm run build
 
-# 🔥 6. EL TRUCO MAGIA: Eliminamos las dependencias de desarrollo.
-# Como bcrypt ya se compiló con C++, se queda intacto y funcional.
-# Como "prisma" está en tus dependencies normales, también se queda.
+# 6. Limpiamos dependencias de desarrollo
 RUN npm prune --omit=dev
 
 # ----------------------------------------
-FROM node:18-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
 
-# Copiamos solo el package.json (útil para que npm run start:migrate:prod funcione)
+# Copiamos solo el package.json
 COPY package*.json ./
 
-# 7. Pasamos la carpeta node_modules ENTERA desde el builder. 
-# Ya viene purgada, con el cliente Prisma generado y bcrypt compilado.
+# 7. Pasamos los node_modules ya listos
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 
-# 8. Copiamos los archivos compilados de Nest y el esquema de la BD
+# 8. Copiamos los artefactos compilados y Prisma
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/prisma ./prisma
 
 EXPOSE 3000
 
-# Ejecutamos las migraciones e iniciamos el servidor de forma segura
+# Ejecutamos migraciones e iniciamos
 CMD ["npm", "run", "start:migrate:prod"]
