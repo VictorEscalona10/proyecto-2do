@@ -17,7 +17,7 @@ async function bootstrap() {
   app.useBodyParser('json', { limit: '10mb' }); // Para JSON (base64)
   app.useBodyParser('urlencoded', { limit: '10mb', extended: true });
 
-  app.use(helmet({
+  /* app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -28,7 +28,7 @@ async function bootstrap() {
         fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
       },
     },
-  }));
+  })); */
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true, }));
 
@@ -39,9 +39,15 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5500', 'https://proyecto-2do-bvu1.vercel.app/'],
-    credentials: true,
-  });
+  origin: [
+    'http://localhost:5173',
+    'http://127.0.0.1:5500',
+    'https://proyecto-2do-bvu1.vercel.app',    // sin barra al final
+    'https://front-proyecto-phi.vercel.app',
+    'https://front-proyecto-gu6r.vercel.app'
+  ],
+  credentials: true,
+});
 
   // Documentación API
   const config = new DocumentBuilder()
