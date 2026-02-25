@@ -40,7 +40,7 @@ async function bootstrap() {
 
   app.enableCors({
   origin: [
-    'http://192.168.1.101:5173', 'http://localhost:5173'
+    'http://192.168.1.101:5173', 'http://localhost:5173', 'https://nebraska-cloud-theology-hottest.trycloudflare.com/'
   ],
   credentials: true,
 });
