@@ -1,45 +1,25 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import * as handlebars from 'handlebars';
 import * as fs from 'fs';
 import * as path from 'path';
 
 @Injectable()
 export class MailService implements OnModuleInit {
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
 
   onModuleInit() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST || 'smtp.gmail.com', // Agregamos fallback por si es undefined
-      port: parseInt(process.env.MAIL_PORT || '587'),  // Agregamos fallback dentro del parseInt
-      secure: true,
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASSWORD,
-      },
-      family: 4,
-      tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3'
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 5000,
-      socketTimeout: 10000,
-    } as any); // <--- ESTO ES LO QUE ARREGLA EL ERROR ROJO
+    // Inicializamos Resend con la llave que pondrás en Render
+    this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
   async verifyConnection() {
-    try {
-      await this.transporter.verify();
-      console.log('Conexión SMTP configurada correctamente');
-    } catch (error) {
-      console.error('Error configurando SMTP:', error);
-    }
+    console.log('Resend configurado correctamente para migdalis.store');
   }
 
   async sendOrderConfirmation(email: string, order: any, pdfBuffer: Buffer) {
     try {
-
+      // Mantenemos tu lógica de búsqueda de la plantilla .hbs
       const templatePath = path.join(process.cwd(), 'src', 'orders', 'templates', 'order-confirmation.hbs');
 
       if (!fs.existsSync(templatePath)) {
@@ -62,28 +42,32 @@ export class MailService implements OnModuleInit {
         })),
       });
 
-      const mailOptions = {
-        from: process.env.SMTP_FROM,
-        to: email,
+      // --- ENVÍO CON RESEND USANDO TU DOMINIO ---
+      const { data, error } = await this.resend.emails.send({
+        from: 'Pastelería Migdalis <pedidos@migdalis.store>', // Tu nuevo remitente oficial
+        to: [email],
         subject: `✅ Confirmación de Orden #${order.id}`,
-        html,
+        html: html,
         attachments: [
           {
             filename: `orden-${order.id}.pdf`,
             content: pdfBuffer,
-            contentType: 'application/pdf',
           },
         ],
-      };
+      });
 
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log('Email enviado:', result.messageId);
-      return result;
-    } catch (error) {
+      if (error) {
+        throw new Error(`Error de Resend: ${error.message}`);
+      }
+
+      console.log('Email enviado con éxito:', data.id);
+      return data;
+
+    } catch (error: any) {
       console.error('Error enviando email:', error);
 
-      // Si hay error con la plantilla, enviar email sin HTML
-      if (error.code === 'ENOENT') {
+      // Si falla la plantilla, usamos el método de texto plano que ya tenías
+      if (error.message.includes('No se encontró la plantilla')) {
         console.log('Enviando email con texto plano...');
         return this.sendPlainTextEmail(email, order, pdfBuffer);
       }
@@ -92,40 +76,30 @@ export class MailService implements OnModuleInit {
     }
   }
 
-  // Método alternativo si falla la plantilla
   private async sendPlainTextEmail(email: string, order: any, pdfBuffer: Buffer) {
     const text = `
 Confirmación de Orden #${order.id}
-
 Fecha: ${order.orderDate.toLocaleDateString('es-ES')}
 Cliente: ${order.user.name}
-
-Productos:
-${order.orderDetails.map((detail: any, index: number) =>
-      `${index + 1}. ${detail.product.name} - ${detail.quantity} x $${detail.unitPrice} = $${detail.unitPrice * detail.quantity}`
-    ).join('\n')}
-
 Total: $${order.total}
-
-Adjunto encontrarás el comprobante en PDF.
 
 ¡Gracias por tu compra!
     `;
 
-    const mailOptions = {
-      from: process.env.SMTP_FROM,
-      to: email,
+    const { data, error } = await this.resend.emails.send({
+      from: 'Pastelería Migdalis <pedidos@migdalis.store>',
+      to: [email],
       subject: `✅ Confirmación de Orden #${order.id}`,
-      text,
+      text: text,
       attachments: [
         {
           filename: `orden-${order.id}.pdf`,
           content: pdfBuffer,
-          contentType: 'application/pdf',
         },
       ],
-    };
+    });
 
-    return this.transporter.sendMail(mailOptions);
+    if (error) throw new Error(error.message);
+    return data;
   }
 }
