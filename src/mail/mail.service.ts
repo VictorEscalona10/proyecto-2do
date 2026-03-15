@@ -10,7 +10,9 @@ export class MailService implements OnModuleInit {
 
   onModuleInit() {
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: process.env.MAIL_HOST || 'smtp.gmail.com', // Agregamos fallback por si es undefined
+      port: parseInt(process.env.MAIL_PORT || '587'),  // Agregamos fallback dentro del parseInt
+      secure: true,
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD,
