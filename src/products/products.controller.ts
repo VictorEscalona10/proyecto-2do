@@ -101,4 +101,12 @@ export class ProductsController {
     async searchProductsByCategory(@Query('name') name: string) {
         return this.productsService.searchByCategory(name)
     }
+
+    @Delete(':id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMINISTRADOR, UserRole.TRABAJADOR)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async deleteProduct(@Param('id') id: string) {
+        await this.productsService.delete(parseInt(id));
+    }
 }

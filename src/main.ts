@@ -39,11 +39,12 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-  origin: [
-    'http://192.168.1.101:5173', 'http://localhost:5173', 'https://nebraska-cloud-theology-hottest.trycloudflare.com'
-  ],
-  credentials: true,
-});
+    origin: [
+      process.env.FRONTEND_URL
+    ],
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  });
 
   // Documentación API
   const config = new DocumentBuilder()
@@ -95,7 +96,7 @@ async function bootstrap() {
   }
 
   const port = Number(process.env.PORT) || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`App escuchando en http://localhost:${port}`);
 }
 bootstrap();

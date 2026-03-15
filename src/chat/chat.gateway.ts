@@ -21,8 +21,8 @@ import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway({
   cors: {
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
-    credentials: true
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
   }
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -49,7 +49,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           const payload = await this.jwtService.verify(token);
           client.data.user = payload;
           this.logger.log(`Cliente autenticado conectado: ${client.id}, usuario: ${payload.email}`);
-          
+
           // Si es admin, registrarlo inmediatamente
           if (payload.role === 'ADMINISTRADOR' || payload.role === 'TRABAJADOR') {
             this.adminSockets.set(payload.email, client);
@@ -106,11 +106,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.log(`Usuario ${user.email} enviando mensaje al chat ${data.chatId}`);
 
       const res = await this.chatService.sendMessage(user, data);
-      
+
       // Enviar a todos en el chat
       this.server.to(data.chatId).emit('new_message', res.message);
       this.logger.log(`Mensaje enviado al chat ${data.chatId} por ${user.email}`);
-      
+
       // Si el mensaje es del admin, notificar al cliente
       // Si es del cliente, notificar a los admins
       if (user.role === 'ADMINISTRADOR' || user.role === 'TRABAJADOR') {
@@ -120,7 +120,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // Si es mensaje de cliente, notificar a los admins
         this.notifyAdminsAboutChatUpdate(data.chatId);
       }
-      
+
       return res;
     } catch (error) {
       this.logger.error(`Error en send_message: ${error.message}`);
@@ -142,13 +142,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       const res = await this.chatService.startChat(user);
-      
+
       // Unir al cliente al chat
       client.join(res.chat.id);
-      
+
       // Notificar a todos los administradores sobre el nuevo chat
       this.notifyAdminsAboutNewChat(res.chat);
-      
+
       this.logger.log(`Nuevo chat creado: ${res.chat.id}`);
       return res;
     } catch (error) {
@@ -166,9 +166,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.log(`DEBUG: User ID: ${user.id}, Tipo: ${typeof user.id}`);
 
       const res = await this.chatService.getMyChats(user);
-      
+
       this.logger.log(`DEBUG: Encontrados ${res.chats?.length || 0} chats para ${user.email}`);
-      
+
       // Si es admin, registrar su socket para notificaciones
       if (user.role === 'ADMINISTRADOR' || user.role === 'TRABAJADOR') {
         this.adminSockets.set(user.email, client);
@@ -216,16 +216,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       const res = await this.chatService.closeChat(user, data);
-      
+
       // Notificar a todos en el chat que fue cerrado
       this.server.to(data.chatId).emit('chat_closed', {
         chatId: data.chatId,
         closedBy: user.email,
       });
-      
+
       // Notificar a todos los admins sobre el chat cerrado
       this.notifyAdminsAboutChatUpdate(data.chatId);
-      
+
       return res;
     } catch (error) {
       this.logger.error(`Error cerrando chat: ${error.message}`);
@@ -238,16 +238,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleAdminConnected(@ConnectedSocket() client: Socket) {
     try {
       const user = client.data.user;
-      
+
       // Solo para admins
       if (user.role !== 'ADMINISTRADOR' && user.role !== 'TRABAJADOR') {
         return { success: false, message: 'Solo administradores pueden usar esta función' };
       }
-      
+
       // Registrar socket del admin
       this.adminSockets.set(user.email, client);
       this.logger.log(`Admin ${user.email} conectado y registrado`);
-      
+
       return { success: true, message: 'Admin registrado para notificaciones' };
     } catch (error) {
       this.logger.error(`Error en admin_connected: ${error.message}`);
@@ -264,20 +264,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return jwtCookie.split('=')[1];
       }
     }
-    
+
     // También verificar headers de autorización por si acaso
     const authHeader = client.handshake.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       return authHeader.substring(7);
     }
-    
+
     return null;
   }
 
   // Notificar a todos los admins sobre nuevo chat
   private notifyAdminsAboutNewChat(chat: any) {
     this.logger.log(`Notificando a admins sobre nuevo chat: ${chat.id}`);
-    
+
     this.adminSockets.forEach((socket, email) => {
       try {
         socket.emit('new_chat_created', chat);
@@ -291,7 +291,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // Notificar a todos los admins sobre actualización de chat
   private notifyAdminsAboutChatUpdate(chatId: string) {
     this.logger.log(`Notificando a admins sobre actualización de chat: ${chatId}`);
-    
+
     this.adminSockets.forEach((socket, email) => {
       try {
         socket.emit('chat_updated', { chatId, updatedAt: new Date().toISOString() });

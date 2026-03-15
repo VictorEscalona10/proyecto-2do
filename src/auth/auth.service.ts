@@ -57,7 +57,7 @@ export class AuthService {
       httpOnly: true,
       sameSite: 'none',
       secure: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
     return { message: 'Inicio de sesión exitoso!', token };

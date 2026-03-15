@@ -99,4 +99,29 @@ export class ProductsService {
       throw new InternalServerErrorException('Error al obtener los productos');
     }
   }
+
+  async delete(id: number){
+    try {
+      const findProduct = await this.prisma.product.findUnique({
+        where: { id },
+      });
+      const deleteProduct = await this.prisma.product.update({
+        where: { id },
+        data: {
+          isActive: false,
+        },
+      });
+      if (!findProduct) {
+        throw new NotFoundException('Producto no encontrado');
+      }
+      return {
+        message: 'Producto eliminado correctamente',
+        data: deleteProduct,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException('Error al eliminar el producto');
+    } 
+
+  }
 }
