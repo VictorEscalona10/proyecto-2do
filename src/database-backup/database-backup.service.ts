@@ -8,7 +8,7 @@ import { UploadBackupService } from './upload-backup.service';
 export class DatabaseBackupService {
   constructor(
     private readonly uploadBackupService: UploadBackupService,
-  ) {}
+  ) { }
 
   async createBackup(): Promise<{ filePath: string; fileName: string }> {
     const backupDir = path.join(process.cwd(), 'backups');
@@ -20,37 +20,27 @@ export class DatabaseBackupService {
     const fileName = `postgres-backup-${Date.now()}.backup`;
     const filePath = path.join(backupDir, fileName);
 
-    const {
-      DB_HOST,
-      DB_PORT,
-      DB_USER,
-      DB_PASSWORD,
-      DB_NAME,
-    } = process.env;
+    // Es mucho más seguro usar la URL completa proporcionada por Neon (ej. postgres://user:pass@host/dbname?sslmode=require)
+    const databaseUrl = process.env.DATABASE_URL;
+
+    if (!databaseUrl) {
+      throw new InternalServerErrorException('Falta la variable DATABASE_URL');
+    }
 
     return new Promise((resolve, reject) => {
       const dump = spawn(
-        'C:\\Program Files\\PostgreSQL\\16\\bin\\pg_dump.exe',
+        'pg_dump', // Comando global agnóstico al sistema operativo
         [
-          '-h', DB_HOST!,
-          '-p', DB_PORT!,
-          '-U', DB_USER!,
-          '-F', 'c',
-          '-f', filePath,
-          DB_NAME!,
-        ],
-        {
-          env: {
-            ...process.env,
-            PGPASSWORD: DB_PASSWORD,
-          },
-        },
+          '--format=c',
+          `--file=${filePath}`,
+          databaseUrl,
+        ]
       );
 
-      dump.on('error', () => {
+      dump.on('error', (err) => {
         reject(
           new InternalServerErrorException(
-            'pg_dump no está disponible en el sistema',
+            `pg_dump no está disponible en el sistema: ${err.message}`,
           ),
         );
       });

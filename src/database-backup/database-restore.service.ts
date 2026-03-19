@@ -5,38 +5,28 @@ import * as fs from 'fs';
 @Injectable()
 export class DatabaseRestoreService {
   async restoreFromBackup(filePath: string): Promise<void> {
-    const {
-      DB_HOST,
-      DB_PORT,
-      DB_USER,
-      DB_PASSWORD,
-      DB_NAME,
-    } = process.env;
+    const databaseUrl = process.env.DATABASE_URL;
+
+    if (!databaseUrl) {
+      throw new InternalServerErrorException('Falta la variable DATABASE_URL');
+    }
 
     return new Promise((resolve, reject) => {
       const restore = spawn(
-        'C:\\Program Files\\PostgreSQL\\16\\bin\\pg_restore.exe',
+        'pg_restore',
         [
           '--clean',
           '--if-exists',
-          '-h', DB_HOST!,
-          '-p', DB_PORT!,
-          '-U', DB_USER!,
-          '-d', DB_NAME!,
+          '--no-owner', // Vital para bases de datos Cloud como Neon
+          '-d', databaseUrl,
           filePath,
-        ],
-        {
-          env: {
-            ...process.env,
-            PGPASSWORD: DB_PASSWORD,
-          },
-        },
+        ]
       );
 
-      restore.on('error', () => {
+      restore.on('error', (err) => {
         reject(
           new InternalServerErrorException(
-            'pg_restore no está disponible',
+            `pg_restore no está disponible: ${err.message}`,
           ),
         );
       });
