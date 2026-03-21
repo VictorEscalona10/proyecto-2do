@@ -4,7 +4,8 @@ import { PasswordResetController } from './password-reset.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { EmailService } from './email.service';
+import { MailService } from 'src/mail/mail.service';
+
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { EmailService } from './email.service';
     }),
   ],
   controllers: [PasswordResetController],
-  providers: [PasswordResetService, EmailService],
+  providers: [PasswordResetService, MailService],
   exports: [PasswordResetService],
 })
 export class PasswordResetModule {}

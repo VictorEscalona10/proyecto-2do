@@ -5,7 +5,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { EmailService } from './email.service';
+import { MailService } from '../mail/mail.service'; // <-- Cambio: Importamos el MailService global
 
 @Injectable()
 export class PasswordResetService {
@@ -13,7 +13,7 @@ export class PasswordResetService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly emailService: EmailService,
+    private readonly mailService: MailService, // <-- Cambio: Inyectamos el MailService basado en Resend
   ) {}
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<{ message: string }> {
@@ -50,8 +50,8 @@ export class PasswordResetService {
 
       const resetLink = `${this.configService.get('FRONTEND_URL')}/reset-password?token=${token}`;
 
-      // Enviar email
-      await this.emailService.sendPasswordResetEmail(user.email, user.name, resetLink);
+      // Enviar email utilizando el nuevo servicio de Resend
+      await this.mailService.sendPasswordResetEmail(user.email, user.name, resetLink);
 
       // Guardar token en base de datos
       await this.prisma.passwordResetToken.create({
@@ -65,7 +65,7 @@ export class PasswordResetService {
       return { message: 'Si el email existe en nuestro sistema, recibirás instrucciones de recuperación en unos minutos.' };
 
     } catch (error) {
-      console.error('Error en forgotPassword');
+      console.error('Error en forgotPassword:', error);
       throw new InternalServerErrorException('Error al procesar la solicitud de recuperación');
     }
   }
@@ -127,7 +127,7 @@ export class PasswordResetService {
 
       return { message: 'Contraseña restablecida exitosamente. Ya puedes iniciar sesión con tu nueva contraseña.' };
 
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === 'TokenExpiredError') {
         throw new BadRequestException('El enlace de recuperación ha expirado. Por favor solicita uno nuevo.');
       }
