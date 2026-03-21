@@ -13,11 +13,12 @@ export class DatabaseRestoreService {
       throw new InternalServerErrorException('Falta la variable DATABASE_URL');
     }
 
-    // Lógica para saber si usar el pg_restore de Render o el de tu Windows local
+    // En producción (Render) usamos el comando global 'pg_restore'
+    // En local usamos tu ruta específica de Windows
     const isProduction = process.env.NODE_ENV === 'production';
     const pgRestorePath = isProduction 
-      ? path.join(process.cwd(), 'pgsql', 'bin', 'pg_restore') 
-      : 'C:\\Program Files\\PostgreSQL\\16\\bin\\pg_restore.exe'; // Tu ruta local
+      ? 'pg_restore' 
+      : 'C:\\Program Files\\PostgreSQL\\16\\bin\\pg_restore.exe';
 
     return new Promise((resolve, reject) => {
       let errorOutput = '';
@@ -25,11 +26,12 @@ export class DatabaseRestoreService {
       const restore = spawn(
         pgRestorePath,
         [
-          '--clean',         // Limpia la base de datos antes de restaurar
+          // '--clean',      // COMENTADO: Neon bloquea esto frecuentemente por falta de permisos
           '--if-exists',     // Solo si las tablas existen
           '--no-owner',      // VITAL PARA NEON: Ignora los dueños originales de las tablas
           '--no-privileges', // VITAL PARA NEON: Ignora los permisos de roles originales
-          '-d', databaseUrl, // Usa la URL de conexión en lugar de host, puerto, etc.
+          '--no-acl',        // VITAL PARA NEON: Ignora comandos de control de acceso
+          '-d', databaseUrl, // Usa la URL de conexión
           filePath,          // La ruta del archivo descargado de Supabase
         ]
       );
@@ -60,7 +62,7 @@ export class DatabaseRestoreService {
           console.error('Error de pg_restore:', errorOutput);
           reject(
             new InternalServerErrorException(
-              `La restauración falló con código ${code}. Revisa los logs del servidor.`,
+              `La restauración falló con código ${code}. Revisa los logs del servidor. Detalles: ${errorOutput}`,
             ),
           );
         }
