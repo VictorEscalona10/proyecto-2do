@@ -30,7 +30,7 @@ export class DatabaseRestoreService {
           '--if-exists',     // Solo si las tablas existen
           '--no-owner',      // VITAL PARA NEON: Ignora los dueños originales de las tablas
           '--no-privileges', // VITAL PARA NEON: Ignora los permisos de roles originales
-          '--no-acl',        // VITAL PARA NEON: Ignora comandos de control de acceso
+                  // VITAL PARA NEON: Ignora comandos de control de acceso
           '-d', databaseUrl, // Usa la URL de conexión
           filePath,          // La ruta del archivo descargado de Supabase
         ]
