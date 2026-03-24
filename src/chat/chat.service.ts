@@ -121,39 +121,39 @@ export class ChatService {
   }
 
   async getMyChats(user: any) {
-    const userId = this.toStringId(user.id);
-    
-    // Para admin/trabajador, obtener todos los chats activos
-    if (user.role === 'ADMINISTRADOR' || user.role === 'TRABAJADOR') {
-      const chats = await this.prisma.chat.findMany({
-        where: { status: 'active' },
-        include: { 
-          messages: { 
-            orderBy: { createdAt: 'desc' }, 
-            take: 1 
-          } 
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-      return { success: true, chats };
-    }
-    
-    // Para usuarios normales, obtener solo sus chats
-    const chats = await this.prisma.chat.findMany({
-      where: { 
-        clientId: userId,
-        status: 'active' 
-      },
-      include: { 
-        messages: { 
-          orderBy: { createdAt: 'desc' }, 
-          take: 1 
-        } 
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    return { success: true, chats };
-  }
+		const userId = this.toStringId(user.id);
+		const chats = await this.prisma.chat.findMany({
+			where: { OR: [{ clientId: userId }, { adminId: userId }], status: 'active' },
+			include: { messages: { orderBy: { createdAt: 'desc' }, take: 1 } },
+			orderBy: { createdAt: 'desc' },
+		});
+
+		// NUEVO: Buscar los datos del cliente para enviarlos al Frontend
+		const chatsWithClientNames = await Promise.all(chats.map(async (chat) => {
+			let clientName = 'Cliente Desconocido';
+			let clientEmail = '';
+			try {
+				const client = await this.prisma.user.findUnique({
+					where: { id: parseInt(chat.clientId) },
+					select: { name: true, email: true }
+				});
+				if (client) {
+					clientName = client.name;
+					clientEmail = client.email;
+				}
+			} catch (e) {
+				this.logger.error(`Error al buscar cliente con ID ${chat.clientId}`);
+			}
+			
+			return {
+				...chat,
+				clientName,
+				clientEmail
+			};
+		}));
+
+		return { success: true, chats: chatsWithClientNames };
+	}
 
   async getChatMessages(user: any, dto: GetChatMessagesDto) {
     const chat = await this.canAccessChat(user, dto.chatId);

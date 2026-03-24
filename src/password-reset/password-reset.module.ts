@@ -10,7 +10,7 @@ import { MailModule } from 'src/mail/mail.module'; // <-- Cambio: Importamos el 
 @Module({
   imports: [
     PrismaModule,
-    MailModule, // <-- Cambio: Importamos el MailModule global
+    MailModule,
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
