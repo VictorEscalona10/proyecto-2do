@@ -11,10 +11,12 @@ import {
     Query,
     HttpCode,
     HttpStatus,
+    ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/createProduct.dto';
+import { UpdateProductDto } from './dto/update.dto';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -108,5 +110,36 @@ export class ProductsController {
     @HttpCode(HttpStatus.NO_CONTENT)
     async deleteProduct(@Param('id') id: string) {
         await this.productsService.delete(parseInt(id));
+    }
+
+    @ApiOperation({
+        summary: 'Editar producto (Administrador / Trabajador)',
+        description: 'Actualiza un producto. Permite enviar una nueva imagen o solo modificar campos de texto.',
+    })
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
+    @ApiResponse({ status: 200, description: 'Producto actualizado correctamente.' })
+    @ApiResponse({ status: 404, description: 'Producto o categoría no encontrados.' })
+    
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ADMINISTRADOR, UserRole.TRABAJADOR)
+    @Put('edit/:id')
+    @UseInterceptors(FileInterceptor('imagen'))
+    async updateProduct(
+        @Param('id', ParseIntPipe) id: number,
+        @UploadedFile() file: Express.Multer.File,
+        @Body() data: UpdateProductDto, // Usa el nuevo DTO aquí
+    ) {
+        let publicUrl: string | undefined;
+        let path: string | undefined;
+
+        // Si el cliente subió una imagen nueva en el form-data, la procesamos
+        if (file) {
+            const uploadResult = await this.supabaseService.uploadProductImage(file);
+            publicUrl = uploadResult.publicUrl;
+            path = uploadResult.path;
+        }
+
+        return this.productsService.update(id, data, publicUrl, path);
     }
 }

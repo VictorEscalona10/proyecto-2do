@@ -122,6 +122,61 @@ export class ProductsService {
       if (error instanceof HttpException) throw error;
       throw new InternalServerErrorException('Error al eliminar el producto');
     } 
+  }
+  
+  async update(id: number, data: any, publicUrl?: string, path?: string) {
+    try {
+      // 1. Verificamos que el producto exista
+      const existingProduct = await this.prisma.product.findUnique({
+        where: { id },
+        include: { category: true }
+      });
 
+      if (!existingProduct) {
+        throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+      }
+
+      let categoryId = existingProduct.categoryId;
+
+      // 2. Si enviaron un categoryName distinto, validamos que exista esa categoría
+      if (data.categoryName && data.categoryName !== existingProduct.category.name) {
+        const findCategory = await this.prisma.category.findUnique({
+          where: { name: data.categoryName },
+        });
+
+        if (!findCategory) {
+          throw new NotFoundException(`Categoría '${data.categoryName}' no encontrada`);
+        }
+        categoryId = findCategory.id;
+      }
+
+      // 3. Construimos el objeto solo con los datos que enviaron (para no borrar lo que ya está)
+      const updateData: Prisma.ProductUpdateInput = {};
+      if (data.name) updateData.name = data.name.toLowerCase();
+      if (data.description !== undefined) updateData.description = data.description;
+      if (data.price !== undefined) updateData.price = new Prisma.Decimal(data.price);
+      if (data.isActive !== undefined) updateData.isActive = data.isActive;
+      if (categoryId) updateData.category = { connect: { id: categoryId } };
+      
+      // Si enviaron una nueva imagen, actualizamos los links
+      if (publicUrl) updateData.imageUrl = publicUrl;
+      if (path) updateData.path = path;
+
+      // 4. Actualizamos en base de datos
+      const updatedProduct = await this.prisma.product.update({
+        where: { id },
+        data: updateData,
+        include: { category: true }
+      });
+
+      return {
+        message: 'Producto actualizado correctamente',
+        data: updatedProduct,
+      };
+
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException('Error al actualizar el producto');
+    }
   }
 }
