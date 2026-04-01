@@ -1,11 +1,10 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 @Injectable()
 export class AdminBotService {
-    private genAI: GoogleGenerativeAI;
+    private groq: Groq;
 
-    // Aquí colocamos el manual que creamos
     private readonly SYSTEM_PROMPT = `
   Eres el asistente virtual exclusivo del Panel de Administración del sistema de la pastelería. Tu objetivo es guiar, explicar y ayudar a los administradores a entender cómo usar cada sección del dashboard.
 
@@ -60,25 +59,34 @@ Instrucción final para la IA: Cuando el usuario te haga una pregunta, identific
   `;
 
     constructor() {
-        // Inicializamos el SDK con la variable de entorno
-        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        this.groq = new Groq({
+            apiKey: process.env.GROQ_API_KEY,
+        });
     }
 
     async askQuestion(question: string) {
         try {
-            // Usamos el modelo flash, que es rápido y soporta instrucciones de sistema
-            const model = this.genAI.getGenerativeModel({
-                model: 'gemini-1.5-flash',
-                systemInstruction: this.SYSTEM_PROMPT,
+            const chatCompletion = await this.groq.chat.completions.create({
+                messages: [
+                    {
+                        role: 'system',
+                        content: this.SYSTEM_PROMPT,
+                    },
+                    {
+                        role: 'user',
+                        content: question,
+                    },
+                ],
+                model: 'llama3-8b-8192', // Puedes usar 'llama3-70b-8192' para más razonamiento
+                temperature: 0.5,
             });
 
-            const result = await model.generateContent(question);
-            const response = await result.response;
-
-            return { answer: response.text() };
+            return {
+                answer: chatCompletion.choices[0]?.message?.content || 'No pude generar una respuesta.'
+            };
         } catch (error) {
-            console.error('Error con Gemini API:', error);
-            throw new InternalServerErrorException('No se pudo procesar la pregunta');
+            console.error('Error con Groq API:', error);
+            throw new InternalServerErrorException('Error al procesar la consulta con Groq');
         }
     }
 }
