@@ -187,6 +187,9 @@ export class OrderService {
 
     return orders.map(order => ({
       ...order,
+      // Extraemos de forma segura el método de pago y la referencia
+      paymentMethod: order.payments?.[0]?.method || null,
+      reference: order.payments?.[0]?.reference || null,
       total: Number(order.total),
       orderDetails: order.orderDetails.map(detail => ({
         ...detail,
@@ -239,6 +242,8 @@ export class OrderService {
 
     return {
       ...order,
+      paymentMethod: order.payments?.[0]?.method || null,
+      reference: order.payments?.[0]?.reference || null,
       total: Number(order.total),
       orderDetails: order.orderDetails.map(detail => ({
         ...detail,
@@ -248,7 +253,7 @@ export class OrderService {
           price: Number(detail.product.price)
         }
       })),
-      paymentProof // Añadir el comprobante con URL firmada fresca
+      paymentProof
     };
   }
 
@@ -297,6 +302,9 @@ export class OrderService {
 
     return orders.map(order => ({
       ...order,
+      // Extraemos de forma segura el método de pago y la referencia
+      paymentMethod: order.payments?.[0]?.method || null,
+      reference: order.payments?.[0]?.reference || null,
       total: Number(order.total),
       orderDetails: order.orderDetails.map(detail => ({
         ...detail,
@@ -354,6 +362,9 @@ export class OrderService {
 
     return orders.map(order => ({
       ...order,
+      // Extraemos de forma segura el método de pago y la referencia
+      paymentMethod: order.payments?.[0]?.method || null,
+      reference: order.payments?.[0]?.reference || null,
       total: Number(order.total),
       orderDetails: order.orderDetails.map(detail => ({
         ...detail,
