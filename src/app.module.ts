@@ -15,6 +15,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { DbLogModule } from './db-log/db-log.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { DatabaseBackupModule } from './database-backup/database-backup.module';
+import { AdminBotModule } from './admin-bot/admin-bot.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { DatabaseBackupModule } from './database-backup/database-backup.module';
     DbLogModule,
     AnalyticsModule,
     DatabaseBackupModule,
+    AdminBotModule,
   ],
   controllers: [AppController],
   providers: [{
