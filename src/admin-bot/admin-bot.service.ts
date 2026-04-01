@@ -77,7 +77,7 @@ Instrucción final para la IA: Cuando el usuario te haga una pregunta, identific
                         content: question,
                     },
                 ],
-                model: 'llama3-8b-8192', // Puedes usar 'llama3-70b-8192' para más razonamiento
+                model: 'llama-3.3-70b-versatile', // Puedes usar 'llama3-70b-8192' para más razonamiento
                 temperature: 0.5,
             });
 
