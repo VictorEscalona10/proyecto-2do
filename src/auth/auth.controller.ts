@@ -52,7 +52,12 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logoutUser(@Res() res: Response) {
-    res.clearCookie('jwt');
+    res.clearCookie('jwt', {
+    httpOnly: true,
+    secure: true,      // Obligatorio para HTTPS (Vercel)
+    sameSite: 'none',  // Obligatorio si el backend y frontend están en dominios distintos
+    path: '/',         // Asegúrate de que coincida con el path donde se creó
+  });
     return res.json({ message: 'Sesion cerrada exitosamente' });
   }
 

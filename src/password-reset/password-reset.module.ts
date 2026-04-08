@@ -4,11 +4,13 @@ import { PasswordResetController } from './password-reset.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { EmailService } from './email.service';
+import { MailModule } from 'src/mail/mail.module'; // <-- Cambio: Importamos el MailModule global
+
 
 @Module({
   imports: [
     PrismaModule,
+    MailModule,
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -20,7 +22,7 @@ import { EmailService } from './email.service';
     }),
   ],
   controllers: [PasswordResetController],
-  providers: [PasswordResetService, EmailService],
+  providers: [PasswordResetService],
   exports: [PasswordResetService],
 })
 export class PasswordResetModule {}

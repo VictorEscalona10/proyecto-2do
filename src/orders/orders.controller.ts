@@ -1,4 +1,5 @@
-import { Controller, Post, Body, Get, Param, HttpCode, HttpStatus, UseGuards, Patch, Put } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, HttpCode, HttpStatus, UseGuards, Patch, Put, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { OrderService } from './orders.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -55,5 +56,44 @@ export class OrderController {
   @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
   async updateStatus(@Body() data: UpdateStatusOrderDto) {
     return this.orderService.updateStatus(data);
+  }
+
+  @Post(':id/payment-proof')
+@UseGuards(JwtAuthGuard)
+@UseInterceptors(FileInterceptor('file', {
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+}))
+async uploadPaymentProof(
+  @Param('id') id: string,
+  @UploadedFile() file: Express.Multer.File,
+) {
+  console.log('🎯 Endpoint llamado - ID de orden:', id);
+  console.log('📁 Archivo recibido en controlador:', {
+    originalname: file?.originalname,
+    mimetype: file?.mimetype,
+    size: file?.size,
+    fieldname: file?.fieldname
+  });
+  
+  const result = await this.orderService.uploadPaymentProof(parseInt(id), file);
+  console.log('🎉 Resultado del servicio:', result);
+  return result;
+}
+
+  @Get(':id/payment-proof')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  //@Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
+  async getPaymentProof(@Param('id') id: string) {
+    const proofUrl = await this.orderService.getPaymentProof(parseInt(id));
+    return { proofUrl };
+  }
+
+  @Get(':id/payment-details')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TRABAJADOR, UserRole.ADMINISTRADOR)
+  async getPaymentDetails(@Param('id') id: string) {
+    return this.orderService.getPaymentDetails(parseInt(id));
   }
 }

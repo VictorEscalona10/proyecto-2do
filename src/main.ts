@@ -13,7 +13,11 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.use(helmet({
+  // Configuración importante: aumentar límite de tamaño
+  app.useBodyParser('json', { limit: '10mb' }); // Para JSON (base64)
+  app.useBodyParser('urlencoded', { limit: '10mb', extended: true });
+
+  /* app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -24,7 +28,7 @@ async function bootstrap() {
         fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
       },
     },
-  }));
+  })); */
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true, }));
 
@@ -34,12 +38,15 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  /* app.enableCors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5500', 'https://proyecto-2do-bvu1.vercel.app/'],
+  app.enableCors({
+    origin: [
+      process.env.FRONTEND_URL
+    ],
     credentials: true,
-  }); */
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  });
 
-  // Documentación API con Scalar
+  // Documentación API
   const config = new DocumentBuilder()
     .setTitle('Documentacion API')
     .setDescription('API para la gestión de la pasteleria Migdalis Tortas')
@@ -88,9 +95,8 @@ async function bootstrap() {
     console.warn('No se montó Scalar: documento Swagger no disponible.');
   }
 
-  // Puerto (fallback a 3000)
   const port = Number(process.env.PORT) || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`App escuchando en http://localhost:${port}`);
 }
 bootstrap();

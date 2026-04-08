@@ -45,6 +45,7 @@ export class CategoryController {
   @Roles(UserRole.ADMINISTRADOR)
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('name') name: string) {
+    console.log("llega")
     return this.categoryService.delete(name);
   }
 

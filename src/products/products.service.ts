@@ -10,38 +10,33 @@ export class ProductsService {
   constructor(private prisma: PrismaService) { }
 
   async create(data: CreateProductDto, publicUrl?: string, path?: string) {
-    const { categoryName } = data;
+  const { categoryId } = data;
 
-    try {
-      const findCategory = await this.prisma.category.findUnique({
-        where: { name: categoryName },
-      });
+  const findCategory = await this.prisma.category.findUnique({
+    where: { id: categoryId },
+  });
 
-      if (!findCategory) {
-        throw new NotFoundException('Categoría no encontrada');
-      }
-
-      const product = await this.prisma.product.create({
-        data: {
-          name: data.name.toLocaleLowerCase(),
-          description: data.description,
-          price: new Prisma.Decimal(data.price),
-          imageUrl: publicUrl,
-          path: path,
-          categoryId: findCategory.id,
-        },
-      });
-
-      return {
-        message: 'Producto creado correctamente',
-        data: product,
-      };
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('Error al crear el producto');
-    }
-
+  if (!findCategory) {
+    throw new NotFoundException('Categoría no encontrada');
   }
+
+  const product = await this.prisma.product.create({
+    data: {
+      name: data.name.toLowerCase(),
+      description: data.description,
+      price: new Prisma.Decimal(data.price),
+      imageUrl: publicUrl,
+      path,
+      categoryId,
+    },
+  });
+
+  return {
+    message: 'Producto creado correctamente',
+    data: product,
+  };
+}
+
 
   async searchByName(name: string) {
     try {
@@ -102,6 +97,86 @@ export class ProductsService {
       };
     } catch (error) {
       throw new InternalServerErrorException('Error al obtener los productos');
+    }
+  }
+
+  async delete(id: number){
+    try {
+      const findProduct = await this.prisma.product.findUnique({
+        where: { id },
+      });
+      const deleteProduct = await this.prisma.product.update({
+        where: { id },
+        data: {
+          isActive: false,
+        },
+      });
+      if (!findProduct) {
+        throw new NotFoundException('Producto no encontrado');
+      }
+      return {
+        message: 'Producto eliminado correctamente',
+        data: deleteProduct,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException('Error al eliminar el producto');
+    } 
+  }
+  
+  async update(id: number, data: any, publicUrl?: string, path?: string) {
+    try {
+      // 1. Verificamos que el producto exista
+      const existingProduct = await this.prisma.product.findUnique({
+        where: { id },
+        include: { category: true }
+      });
+
+      if (!existingProduct) {
+        throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+      }
+
+      let categoryId = existingProduct.categoryId;
+
+      // 2. Si enviaron un categoryName distinto, validamos que exista esa categoría
+      if (data.categoryName && data.categoryName !== existingProduct.category.name) {
+        const findCategory = await this.prisma.category.findUnique({
+          where: { name: data.categoryName },
+        });
+
+        if (!findCategory) {
+          throw new NotFoundException(`Categoría '${data.categoryName}' no encontrada`);
+        }
+        categoryId = findCategory.id;
+      }
+
+      // 3. Construimos el objeto solo con los datos que enviaron (para no borrar lo que ya está)
+      const updateData: Prisma.ProductUpdateInput = {};
+      if (data.name) updateData.name = data.name.toLowerCase();
+      if (data.description !== undefined) updateData.description = data.description;
+      if (data.price !== undefined) updateData.price = new Prisma.Decimal(data.price);
+      if (data.isActive !== undefined) updateData.isActive = data.isActive;
+      if (categoryId) updateData.category = { connect: { id: categoryId } };
+      
+      // Si enviaron una nueva imagen, actualizamos los links
+      if (publicUrl) updateData.imageUrl = publicUrl;
+      if (path) updateData.path = path;
+
+      // 4. Actualizamos en base de datos
+      const updatedProduct = await this.prisma.product.update({
+        where: { id },
+        data: updateData,
+        include: { category: true }
+      });
+
+      return {
+        message: 'Producto actualizado correctamente',
+        data: updatedProduct,
+      };
+
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException('Error al actualizar el producto');
     }
   }
 }

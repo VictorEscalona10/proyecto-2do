@@ -13,6 +13,9 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { ChatModule } from './chat/chat.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { DbLogModule } from './db-log/db-log.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { DatabaseBackupModule } from './database-backup/database-backup.module';
+import { AdminBotModule } from './admin-bot/admin-bot.module';
 
 @Module({
   imports: [
@@ -32,6 +35,9 @@ import { DbLogModule } from './db-log/db-log.module';
     ChatModule,
     ReviewsModule,
     DbLogModule,
+    AnalyticsModule,
+    DatabaseBackupModule,
+    AdminBotModule,
   ],
   controllers: [AppController],
   providers: [{

@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model DbLog {
@@ -94,6 +95,9 @@ model Order {
   total        Decimal
   orderDetails OrderDetail[]
   payments     Payment[]
+  
+  // Agregar relación con Payment
+  @@unique([id])
 }
 
 model OrderDetail {
@@ -115,6 +119,7 @@ model OrderDetail {
   customizations Json? 
 }
 
+// Añade esto al modelo Payment
 model Payment {
   id          Int      @id @default(autoincrement())
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -122,6 +127,9 @@ model Payment {
   method      PaymentMethod
   paymentDate DateTime @default(now())
   status      Status   @default(PENDING)
+  proofUrl    String?  // URL firmada de la imagen en Supabase
+  fileName    String?  // Nombre del archivo en Supabase (para regenerar URLs)
+  reference   String?  // Referencia (para pago móvil/transferencia)
 }
 
 model Review {
@@ -157,6 +165,7 @@ model Chat {
   adminId   String
   status    String   @default("active")
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
   
   messages Message[]
 }
